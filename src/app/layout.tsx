@@ -32,13 +32,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[#f7fafe] antialiased`}
       >
-        <NuqsProvider>
-          <ReactQueryProvider>
+        <ReactQueryProvider>
+          <NuqsProvider>
             <Navbar />
             {children}
             <Footer />
-          </ReactQueryProvider>
-        </NuqsProvider>
+          </NuqsProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

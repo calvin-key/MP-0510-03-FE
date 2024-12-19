@@ -25,7 +25,7 @@ const EventCard: FC<EventCardProp> = ({ event }) => {
   };
 
   return (
-    <section className="mt-5 grid grid-cols-1 gap-5 md:mx-0 md:grid-cols-4">
+    <div>
       <Card className="duration-300 hover:bg-card hover:shadow-lg">
         <CardHeader className="space-y-4">
           <div className="relative h-[200px] w-full overflow-hidden rounded-lg bg-gray-200">
@@ -65,7 +65,7 @@ const EventCard: FC<EventCardProp> = ({ event }) => {
           <Button className="bg-orange-400 hover:bg-orange-700">Buy Now</Button>
         </CardFooter>
       </Card>
-    </section>
+    </div>
   );
 };
 
