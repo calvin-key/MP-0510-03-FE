@@ -5,6 +5,12 @@ import ReactQueryProvider from "@/providers/ReactQueryProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import NuqsProvider from "@/providers/NuqsProvider";
+import NextAuth from "next-auth";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import StoreProvider from "@/providers/StoreProvider";
+import NextAuthProvider from "@/providers/NextAuthProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,13 +38,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} bg-[#f7fafe] antialiased`}
       >
-        <ReactQueryProvider>
-          <NuqsProvider>
-            <Navbar />
-            {children}
-            <Footer />
-          </NuqsProvider>
-        </ReactQueryProvider>
+        <ThemeProvider>
+          <NextAuthProvider>
+            <NuqsProvider>
+              <StoreProvider>
+                <ReactQueryProvider>
+                  <Navbar />
+                  {children}
+                  <Footer />
+                </ReactQueryProvider>
+                <ToastContainer />
+              </StoreProvider>
+            </NuqsProvider>
+          </NextAuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

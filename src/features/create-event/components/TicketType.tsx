@@ -1,73 +1,76 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import React from "react";
 
-const TicketType = () => {
-  type Ticket = {
-    type: string;
-    price: string;
-    seats: string;
-  };
+interface Ticket {
+  ticketType: string;
+  price: string;
+  availableSeats: string;
+}
 
-  const [tickets, setTickets] = useState<Ticket[]>([
-    { type: "", price: "", seats: "" },
-  ]);
+interface TicketTypeProps {
+  values: Ticket[];
+  setFieldValue: (field: string, value: any) => void;
+}
 
+const TicketType: React.FC<TicketTypeProps> = ({ values, setFieldValue }) => {
   const handleAddTicket = () => {
-    setTickets([...tickets, { type: "", price: "", seats: "" }]);
+    setFieldValue("ticketTypes", [
+      ...values,
+      { ticketType: "", price: "", availableSeats: "" },
+    ]);
   };
 
   const handleTicketChange = (
     index: number,
     field: keyof Ticket,
-    value: string,
+    value: string
   ) => {
-    const updatedTickets = [...tickets];
+    const updatedTickets = [...values];
     updatedTickets[index][field] = value;
-    setTickets(updatedTickets);
+    setFieldValue("ticketTypes", updatedTickets);
   };
 
   const handleRemoveTicket = (index: number) => {
-    const updatedTickets = tickets.filter((_, i) => i !== index);
-    setTickets(updatedTickets);
+    const updatedTickets = values.filter((_, i) => i !== index);
+    setFieldValue("ticketTypes", updatedTickets);
   };
 
   return (
     <div className="container mx-auto mt-9 space-y-5">
-      {/* Ticket Types */}
       <div className="grid w-full max-w-5xl items-center gap-1.5">
-        <Label htmlFor="tickets">Ticket Types</Label>
-        {tickets.map((ticket, index) => (
+        <Label>Ticket Types</Label>
+        {values.map((ticket, index) => (
           <div key={index} className="mb-3 flex items-center gap-4">
             <Input
               type="text"
               placeholder="Ticket Type"
-              value={ticket.type}
+              value={ticket.ticketType}
               onChange={(e) =>
-                handleTicketChange(index, "type", e.target.value)
+                handleTicketChange(index, "ticketType", e.target.value)
               }
-              className="w-1/3 bg-white"
+              className="w-1/3"
             />
             <Input
-              type="number"
+              type="text"
               placeholder="Price"
               value={ticket.price}
               onChange={(e) =>
                 handleTicketChange(index, "price", e.target.value)
               }
-              className="w-1/3 bg-white"
+              className="w-1/3"
             />
             <Input
-              type="number"
+              type="text"
               placeholder="Available Seats"
-              value={ticket.seats}
+              value={ticket.availableSeats}
               onChange={(e) =>
-                handleTicketChange(index, "seats", e.target.value)
+                handleTicketChange(index, "availableSeats", e.target.value)
               }
-              className="w-1/3 bg-white"
+              className="w-1/3"
             />
             <Button
               type="button"

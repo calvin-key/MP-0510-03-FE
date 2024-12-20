@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import React, { useState } from "react";
+import React from "react";
 
 const predefinedCategories = [
   "Music",
@@ -18,40 +18,43 @@ const predefinedCategories = [
   "Food & Drink",
 ];
 
-const CategoriesForm = () => {
-  const [categories, setCategories] = useState<string[]>([""]);
+interface CategoriesFormProps {
+  values: string[];
+  setFieldValue: (field: string, value: any) => void;
+}
 
+const CategoriesForm: React.FC<CategoriesFormProps> = ({ values, setFieldValue }) => {
   const handleAddCategory = () => {
-    setCategories([...categories, ""]);
+    setFieldValue("categories", [...values, ""]);
   };
 
   const handleCategoryChange = (index: number, value: string) => {
-    const updatedCategories = [...categories];
+    const updatedCategories = [...values];
     updatedCategories[index] = value;
-    setCategories(updatedCategories);
+    setFieldValue("categories", updatedCategories);
   };
 
   const handleRemoveCategory = (index: number) => {
-    const updatedCategories = categories.filter((_, i) => i !== index);
-    setCategories(updatedCategories);
+    const updatedCategories = values.filter((_, i) => i !== index);
+    setFieldValue("categories", updatedCategories);
   };
 
   return (
     <div className="flex flex-col gap-2">
       <Label>Event Categories</Label>
-      {categories.map((category, index) => (
+      {values.map((category, index) => (
         <div key={index} className="flex items-center gap-4">
           <Select
-            onValueChange={(value) => handleCategoryChange(index, value)}
             value={category}
+            onValueChange={(value) => handleCategoryChange(index, value)}
           >
-            <SelectTrigger className="w-3/4 bg-white">
-              <SelectValue placeholder="Select a Category" />
+            <SelectTrigger>
+              <SelectValue placeholder="Select Category" />
             </SelectTrigger>
             <SelectContent>
-              {predefinedCategories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
+              {predefinedCategories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -59,19 +62,14 @@ const CategoriesForm = () => {
           <Button
             type="button"
             variant="ghost"
-            className="text-red-500"
             onClick={() => handleRemoveCategory(index)}
+            className="text-red-500"
           >
             Remove
           </Button>
         </div>
       ))}
-      <Button
-        type="button"
-        variant="default"
-        className="w-fit px-10"
-        onClick={handleAddCategory}
-      >
+      <Button type="button" variant="default" className="w-fit" onClick={handleAddCategory}>
         Add Category
       </Button>
     </div>

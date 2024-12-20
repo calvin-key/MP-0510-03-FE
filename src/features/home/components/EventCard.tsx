@@ -59,7 +59,7 @@ const EventCard: FC<EventCardProp> = ({ event }) => {
           <div className="flex flex-col gap-1 text-gray-700">
             <p>From: </p>
             <p className="font-extrabold">
-              {formatToIDR(Number(event.ticketTypes[0]?.price) || 0)}
+              {formatToIDR(Number(event.lowestPrice) || 0)}
             </p>
           </div>
           <Button className="bg-orange-400 hover:bg-orange-700">Buy Now</Button>
