@@ -16,82 +16,23 @@ import { useFormik } from "formik";
 import Link from "next/link";
 import { RegisterSchema } from "./schemas";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { generateCouponCode, generateReferralCode } from "@/lib/refferal";
-import { useReferral } from "@/hooks/api/auth/useReferral";
-
-interface RegisterValues {
-  fullName: string;
-  role: "customer" | "organizer";
-  email: string;
-  password: string;
-  referralCode?: string;
-  generatedReferralCode: string;
-}
-
-async function getReferrerByCode(
-  referralCode: string,
-): Promise<{ id: string }> {
-  const response = await fetch(`/api/users/referral/${referralCode}`);
-  if (!response.ok) {
-    throw new Error("Failed to get referrer information");
-  }
-  return response.json();
-}
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RegisterPage = () => {
   const { mutateAsync: register, isPending } = useRegister();
-  const { validateReferral, createReferralReward } = useReferral();
 
-  const formik = useFormik<RegisterValues>({
+  const formik = useFormik({
     initialValues: {
       fullName: "",
-      role: "customer",
+      role: "",
       email: "",
       password: "",
       referralCode: "",
-      generatedReferralCode: generateReferralCode(),
     },
     validationSchema: RegisterSchema,
     onSubmit: async (values) => {
-      try {
-        if (values.referralCode) {
-          const isValid = await validateReferral(values.referralCode);
-          if (!isValid) {
-            formik.setFieldError("referralCode", "Invalid referral code");
-            return;
-          }
-        }
-
-        const user = await register(values);
-
-        if (values.referralCode && user) {
-          const referrer = await getReferrerByCode(values.referralCode);
-
-          await createReferralReward({
-            userId: referrer.id,
-            recipientId: user.id,
-            rewardType: "POINTS",
-            pointsAmount: 10000,
-            expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-          });
-
-          await createReferralReward({
-            userId: user.id,
-            rewardType: "COUPON",
-            couponCode: generateCouponCode(),
-            discountAmount: 10,
-            expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-          });
-        }
-
-        window.location.href =
-          values.role === "organizer"
-            ? "/organizer/dashboard"
-            : "/customer/dashboard";
-      } catch (error) {
-        console.error("Registration error:", error);
-        formik.setStatus("Registration failed. Please try again.");
-      }
+      await register(values);
     },
   });
 
@@ -115,14 +56,6 @@ const RegisterPage = () => {
                 <p className="mt-4 text-lg font-medium text-white lg:text-xl">
                   "Tickets Made Simple, Experiences Made Special."
                 </p>
-                {formik.values.referralCode && (
-                  <Alert className="mt-6 bg-green-50 shadow-lg">
-                    <AlertDescription>
-                      Register with a referral code to get an exclusive discount
-                      coupon!
-                    </AlertDescription>
-                  </Alert>
-                )}
               </div>
             </div>
           </div>
