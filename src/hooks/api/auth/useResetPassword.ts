@@ -1,7 +1,6 @@
 "use client";
 
 import { axiosInstance } from "@/lib/axios";
-import { useAppDispatch } from "@/redux/hooks";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -28,7 +27,7 @@ const useResetPassword = (token: string) => {
       return data;
     },
     onSuccess: () => {
-      toast.success("Reset password success!");
+      toast.success("Password reset successful! Redirecting to login...");
       router.push("/login");
     },
     onError: (error: AxiosError<any>) => {
