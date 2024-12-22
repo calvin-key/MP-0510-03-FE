@@ -4,7 +4,7 @@ import PaginationSection from "@/components/PaginationSection";
 import useGetEvents from "@/hooks/api/event/useGetEvents";
 import { Event } from "@/types/event"; // Ensure to import the Event type
 import { Search } from "lucide-react";
-import { FC, useState } from "react";
+import { FC } from "react";
 import Categories from "./Categories";
 import EventCard from "./EventCard";
 import SkeletonEventList from "./SkeletonEventList";
@@ -85,9 +85,11 @@ const CardList: FC = () => {
           <h1>No Event</h1>
         </div>
       ) : (
-        data.data.map((event: Event, index: number) => (
-          <EventCard key={index} event={event} />
-        ))
+        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
+          {data.data.map((event: Event, index: number) => (
+            <EventCard key={index} event={event} />
+          ))}
+        </div>
       )}
 
       {data && data.data.length > 0 && (

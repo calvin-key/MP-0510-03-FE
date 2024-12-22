@@ -15,4 +15,5 @@ export interface Event {
   organizer: { fullName: string };
   eventCategories: [{ name: string }];
   ticketTypes: [{ price: number }];
+  lowestPrice: number;
 }

@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import NuqsProvider from "@/providers/NuqsProvider";
 import NextAuth from "next-auth";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import StoreProvider from "@/providers/StoreProvider";
 import NextAuthProvider from "@/providers/NextAuthProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
