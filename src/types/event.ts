@@ -1,3 +1,7 @@
+import { EventCategory } from "./eventCategory";
+import { Organizer } from "./organizer";
+import { TicketType } from "./ticketTypes";
+
 export interface Event {
   id: number;
   name: string;
@@ -12,8 +16,12 @@ export interface Event {
   createdAt: Date;
   updatedAt: Date;
   userId: number;
-  organizer: { fullName: string };
-  eventCategories: [{ name: string }];
-  ticketTypes: [{ price: number }];
+  organizer: Organizer;
+  eventCategories: EventCategory[];
+  ticketTypes: TicketType[];
+  location: { city: string };
+  // organizer: { fullName: string };
+  // eventCategories: [{ name: string }];
+  // ticketTypes: [{ price: number }];
   lowestPrice: number;
 }
