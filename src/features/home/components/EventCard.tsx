@@ -11,6 +11,7 @@ import Image from "next/image";
 import { FC } from "react";
 import { format } from "date-fns";
 import { Event } from "@/types/event";
+import Link from "next/link";
 
 interface EventCardProp {
   event: Event;
@@ -25,7 +26,7 @@ const EventCard: FC<EventCardProp> = ({ event }) => {
   };
 
   return (
-    <div>
+    <Link href={`/events/${event.id}`}>
       <Card className="duration-300 hover:bg-card hover:shadow-lg">
         <CardHeader className="space-y-4">
           <div className="relative h-[200px] w-full overflow-hidden rounded-lg bg-gray-200">
@@ -65,7 +66,7 @@ const EventCard: FC<EventCardProp> = ({ event }) => {
           <Button className="bg-orange-400 hover:bg-orange-700">Buy Now</Button>
         </CardFooter>
       </Card>
-    </div>
+    </Link>
   );
 };
 
