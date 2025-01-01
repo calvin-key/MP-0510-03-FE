@@ -1,11 +1,21 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { useAppSelector } from "@/redux/hooks";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AuthGuard(Component: any) {
-  return async function IsAuth(props: any) {
-    const session = await auth();
+  return function IsAuth(props: any) {
+    const { id } = useAppSelector((state) => state.user);
+    const router = useRouter();
+    useEffect(() => {
+      if (!id) {
+        router.push("/login");
+      }
+    }, [id, router]);
 
-    if (!session) return redirect("/login");
+    if (!id) {
+      return <LoadingSpinner />;
+    }
 
     return <Component {...props} />;
   };

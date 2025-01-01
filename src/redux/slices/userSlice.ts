@@ -2,16 +2,20 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface UserState {
   id: number;
-  name: string;
+  fullName: string;
   email: string;
-  token: string;
+  phoneNumber: string;
+  address: string;
+  profilePicture: string;
 }
 
 const initialState: UserState = {
   id: 0,
-  name: "",
+  fullName: "",
   email: "",
-  token: "",
+  phoneNumber: "",
+  address: "",
+  profilePicture: "",
 };
 
 export const userSlice = createSlice({
@@ -20,19 +24,33 @@ export const userSlice = createSlice({
   reducers: {
     loginAction: (state, action: PayloadAction<UserState>) => {
       state.id = action.payload.id;
-      state.name = action.payload.name;
+      state.fullName = action.payload.fullName;
       state.email = action.payload.email;
-      state.token = action.payload.token;
+      state.phoneNumber = action.payload.phoneNumber;
+      state.address = action.payload.address;
+      state.profilePicture = action.payload.profilePicture;
     },
     logoutAction: (state) => {
       state.id = 0;
-      state.name = "";
+      state.fullName = "";
       state.email = "";
-      state.token = "";
+      state.phoneNumber = "";
+      state.address = "";
+      state.profilePicture = "";
+    },
+    updateUserAction: (state, action: PayloadAction<Partial<UserState>>) => {
+      // Memperbarui hanya field yang ada dalam payload
+      const { fullName, email, phoneNumber, address, profilePicture } =
+        action.payload;
+      if (fullName !== undefined) state.fullName = fullName;
+      if (email !== undefined) state.email = email;
+      if (phoneNumber !== undefined) state.phoneNumber = phoneNumber;
+      if (address !== undefined) state.address = address;
+      if (profilePicture !== undefined) state.profilePicture = profilePicture;
     },
   },
 });
 
-export const { loginAction, logoutAction } = userSlice.actions;
-
+export const { loginAction, logoutAction, updateUserAction } =
+  userSlice.actions;
 export default userSlice.reducer;

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { Settings } from "lucide-react";
 
 interface SidebarProps {
   onLogout?: () => void;
@@ -30,7 +31,7 @@ const Sidebar = ({ onLogout }: SidebarProps) => {
     const eventRelatedPaths = [
       "/dashboard/event-list",
       "/dashboard/create-event",
-      "/dashboard/categories",
+      "/dashboard/event-categories",
       "/dashboard/vouchers",
       "/dashboard/statistics",
       "/dashboard/transaction",
@@ -92,7 +93,7 @@ const Sidebar = ({ onLogout }: SidebarProps) => {
                     label: "Create Event",
                   },
                   {
-                    href: "/dashboard/categories",
+                    href: "/dashboard/event-categories",
                     icon: Tag,
                     label: "Event Category",
                   },
@@ -136,6 +137,17 @@ const Sidebar = ({ onLogout }: SidebarProps) => {
 
           <div className="mt-4 border-t pt-4">
             <nav className="space-y-2">
+              <Link
+                href="/dashboard/setting"
+                className={`flex items-center space-x-2 rounded-lg p-2 ${
+                  pathname === "/dashboard/settings"
+                    ? "bg-purple-50 text-purple-700"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                }`}
+              >
+                <Settings className="h-5 w-5" />
+                <span>Settings</span>
+              </Link>
               <Link
                 href="/dashboard/profile"
                 className={`flex items-center space-x-2 rounded-lg p-2 ${

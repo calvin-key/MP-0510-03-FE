@@ -1,14 +1,8 @@
 import * as Yup from "yup";
 
-export const ProfileSchemas = Yup.object().shape({
-  username: Yup.string().required("Username is required"),
-  email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required"),
-  currentPassword: Yup.string(),
-  newPassword: Yup.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: Yup.string().oneOf(
-    [Yup.ref("newPassword"), undefined],
-    "Passwords must match",
-  ),
+export const updateProfileSchema = Yup.object().shape({
+  fullName: Yup.string().required("Full name is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  phoneNumber: Yup.string().required("Phone number is required"),
+  address: Yup.string().required("Address is required"),
 });

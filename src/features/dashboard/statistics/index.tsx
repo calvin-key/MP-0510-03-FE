@@ -1,33 +1,6 @@
-// app/statistics/page.tsx
 "use client";
 
 import { useState } from "react";
-import { useFormik } from "formik";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { CalendarIcon } from "lucide-react";
-import { addDays, format } from "date-fns";
-import { DateRange } from "react-day-picker";
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-// import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardContent,
@@ -35,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -43,303 +17,200 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
-// Types for our statistics data
-interface StatData {
-  date: string;
-  value: number;
-  category: string;
-}
-
-interface StatsCardProps {
-  title: string;
-  value: string | number;
-  description: string;
-  className?: string;
-}
-
-// Schema for form validation
-const statisticsFormSchema = z.object({
-  dateRange: z.object({
-    from: z.date(),
-    to: z.date(),
-  }),
-  groupBy: z.enum(["day", "month", "year"]),
-  category: z.string(),
-});
-
-// Colors for charts
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
-
-// Stats Card Component
-const StatsCard = ({
-  title,
-  value,
-  description,
-  className,
-}: StatsCardProps) => (
-  <Card className={className}>
-    <CardHeader>
-      <CardTitle className="text-sm font-medium text-muted-foreground">
-        {title}
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
-      <p className="text-xs text-muted-foreground">{description}</p>
-    </CardContent>
-  </Card>
-);
+  getEventsByDay,
+  getEventsByMonth,
+  getEventsByYear,
+} from "@/utils/eventDataManager";
+import { AnnualView } from "./components/AnnualView";
+import { MonthlyView } from "./components/MonthlyView";
+import { DailyView } from "./components/DailyView";
+import { CalendarIcon, BarChart2, PieChart, LineChart } from "lucide-react";
 
 const StatisticsPage = () => {
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2024, 0, 20),
-    to: addDays(new Date(2024, 0, 20), 20),
-  });
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedDay, setSelectedDay] = useState(new Date().getDate());
 
-  const [chartType, setChartType] = useState<"line" | "bar" | "pie">("line");
-
-  // Mock data - replace with real API call
-  const mockData: StatData[] = [
-    { date: "2024-01", value: 400, category: "Events" },
-    { date: "2024-02", value: 300, category: "Events" },
-    { date: "2024-03", value: 600, category: "Events" },
-    { date: "2024-04", value: 800, category: "Events" },
-    { date: "2024-05", value: 700, category: "Events" },
-  ];
-
-  const form = useFormik({
-    initialValues: {
-      dateRange: {
-        from: new Date(),
-        to: addDays(new Date(), 20),
-      },
-      groupBy: "month",
-      category: "all",
-    },
-    onSubmit: async (values) => {
-      // Handle form submission - fetch data based on filters
-      console.log(values);
-    },
-  });
+  const yearlyData = getEventsByYear(selectedYear);
+  const monthlyData = getEventsByMonth(selectedYear, selectedMonth);
+  const dailyData = getEventsByDay(selectedYear, selectedMonth, selectedDay);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="container mx-auto py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">
-            Statistics Dashboard
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Analyze your event data with interactive visualizations
-          </p>
-        </div>
-
-        {/* Filters Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <form onSubmit={form.handleSubmit} className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-3">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Date Range</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !date && "text-muted-foreground",
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date?.from ? (
-                          date.to ? (
-                            <>
-                              {format(date.from, "LLL dd, y")} -{" "}
-                              {format(date.to, "LLL dd, y")}
-                            </>
-                          ) : (
-                            format(date.from, "LLL dd, y")
-                          )
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      {/* <Calendar
-                        initialFocus
-                        mode="range"
-                        defaultMonth={date?.from}
-                        selected={date}
-                        onSelect={setDate}
-                        numberOfMonths={2}
-                      /> */}
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Group By</label>
-                  <Select
-                    onValueChange={(value) =>
-                      form.setFieldValue("groupBy", value)
-                    }
-                    defaultValue={form.values.groupBy}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
+          Event Statistics Dashboard
+        </h1>
+        <Card className="overflow-hidden bg-white/50 shadow-xl backdrop-blur-lg dark:bg-gray-800/50">
+          <Tabs defaultValue="yearly" className="w-full">
+            <CardHeader>
+              <div className="flex flex-col items-center justify-between space-y-4 sm:flex-row sm:space-y-0">
+                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
+                  Statistics Overview
+                </CardTitle>
+                <TabsList className="inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                  <TabsTrigger
+                    value="yearly"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-gray-950 data-[state=active]:shadow-sm dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300 dark:data-[state=active]:bg-gray-950 dark:data-[state=active]:text-gray-50"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select grouping" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="day">Daily</SelectItem>
-                      <SelectItem value="month">Monthly</SelectItem>
-                      <SelectItem value="year">Yearly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Category</label>
-                  <Select
-                    onValueChange={(value) =>
-                      form.setFieldValue("category", value)
-                    }
-                    defaultValue={form.values.category}
+                    <LineChart className="mr-2 h-4 w-4" />
+                    Yearly
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="monthly"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-gray-950 data-[state=active]:shadow-sm dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300 dark:data-[state=active]:bg-gray-950 dark:data-[state=active]:text-gray-50"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      <SelectItem value="events">Events</SelectItem>
-                      <SelectItem value="users">Users</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                    <BarChart2 className="mr-2 h-4 w-4" />
+                    Monthly
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="daily"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-gray-950 data-[state=active]:shadow-sm dark:ring-offset-gray-950 dark:focus-visible:ring-gray-300 dark:data-[state=active]:bg-gray-950 dark:data-[state=active]:text-gray-50"
+                  >
+                    <PieChart className="mr-2 h-4 w-4" />
+                    Daily
+                  </TabsTrigger>
+                </TabsList>
               </div>
-
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  className="bg-blue-600 text-white hover:bg-blue-700"
+            </CardHeader>
+            <CardContent>
+              <TabsContent value="yearly" className="mt-6">
+                <CardDescription className="mb-4">
+                  Event data for the year {selectedYear}
+                </CardDescription>
+                <Select
+                  onValueChange={(value) => setSelectedYear(parseInt(value))}
                 >
-                  Apply Filters
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Chart Type Selection */}
-        <div className="mb-6 flex space-x-4">
-          <Button
-            variant={chartType === "line" ? "default" : "outline"}
-            onClick={() => setChartType("line")}
-          >
-            Line Chart
-          </Button>
-          <Button
-            variant={chartType === "bar" ? "default" : "outline"}
-            onClick={() => setChartType("bar")}
-          >
-            Bar Chart
-          </Button>
-          <Button
-            variant={chartType === "pie" ? "default" : "outline"}
-            onClick={() => setChartType("pie")}
-          >
-            Pie Chart
-          </Button>
-        </div>
-
-        {/* Charts Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer>
-                {chartType === "line" ? (
-                  <LineChart data={mockData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke="#3b82f6"
-                      strokeWidth={2}
-                      dot={{ r: 4 }}
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                ) : chartType === "bar" ? (
-                  <BarChart data={mockData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" fill="#3b82f6" />
-                  </BarChart>
-                ) : (
-                  <PieChart>
-                    <Pie
-                      data={mockData}
-                      dataKey="value"
-                      nameKey="date"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={150}
-                      fill="#8884d8"
-                      label
-                    >
-                      {mockData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
+                  <SelectTrigger className="mb-6 w-full sm:w-[200px]">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <SelectValue placeholder="Select Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[...Array(5)].map((_, i) => (
+                      <SelectItem
+                        key={i}
+                        value={(new Date().getFullYear() - i).toString()}
+                      >
+                        {new Date().getFullYear() - i}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <AnnualView data={yearlyData} />
+              </TabsContent>
+              <TabsContent value="monthly" className="mt-6">
+                <CardDescription className="mb-4">
+                  Event data for{" "}
+                  {new Date(selectedYear, selectedMonth).toLocaleString(
+                    "default",
+                    { month: "long", year: "numeric" },
+                  )}
+                </CardDescription>
+                <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+                  <Select
+                    onValueChange={(value) => setSelectedYear(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Select Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[...Array(5)].map((_, i) => (
+                        <SelectItem
+                          key={i}
+                          value={(new Date().getFullYear() - i).toString()}
+                        >
+                          {new Date().getFullYear() - i}
+                        </SelectItem>
                       ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                )}
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    onValueChange={(value) => setSelectedMonth(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Select Month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[...Array(12)].map((_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {new Date(0, i).toLocaleString("default", {
+                            month: "long",
+                          })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <MonthlyView data={monthlyData} />
+              </TabsContent>
+              <TabsContent value="daily" className="mt-6">
+                <CardDescription className="mb-4">
+                  Event data for{" "}
+                  {new Date(
+                    selectedYear,
+                    selectedMonth,
+                    selectedDay,
+                  ).toLocaleDateString()}
+                </CardDescription>
+                <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+                  <Select
+                    onValueChange={(value) => setSelectedYear(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Select Year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[...Array(5)].map((_, i) => (
+                        <SelectItem
+                          key={i}
+                          value={(new Date().getFullYear() - i).toString()}
+                        >
+                          {new Date().getFullYear() - i}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    onValueChange={(value) => setSelectedMonth(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Select Month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[...Array(12)].map((_, i) => (
+                        <SelectItem key={i} value={i.toString()}>
+                          {new Date(0, i).toLocaleString("default", {
+                            month: "long",
+                          })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    onValueChange={(value) => setSelectedDay(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full sm:w-[200px]">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      <SelectValue placeholder="Select Day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[...Array(31)].map((_, i) => (
+                        <SelectItem key={i} value={(i + 1).toString()}>
+                          {i + 1}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <DailyView data={dailyData} />
+              </TabsContent>
+            </CardContent>
+          </Tabs>
         </Card>
-
-        {/* Statistics Cards */}
-        <div className="grid gap-6 md:grid-cols-4">
-          <StatsCard
-            title="Total Events"
-            value={mockData.reduce((acc, curr) => acc + curr.value, 0)}
-            description="Total number of events in selected period"
-          />
-          <StatsCard
-            title="Average per Period"
-            value={Math.round(
-              mockData.reduce((acc, curr) => acc + curr.value, 0) /
-                mockData.length,
-            )}
-            description="Average events per time period"
-          />
-          <StatsCard
-            title="Peak Count"
-            value={Math.max(...mockData.map((d) => d.value))}
-            description="Highest number of events in a single period"
-          />
-          <StatsCard
-            title="Growth Rate"
-            value={`${(((mockData[mockData.length - 1].value - mockData[0].value) / mockData[0].value) * 100).toFixed(1)}%`}
-            description="Growth rate over selected period"
-          />
-        </div>
       </div>
     </div>
   );

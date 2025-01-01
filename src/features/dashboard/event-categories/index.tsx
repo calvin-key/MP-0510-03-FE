@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
-import { useFormik } from "formik";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -20,54 +20,53 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CategoryFormValues, CategorySchema } from "./schemas";
+import { useFormik } from "formik";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Category } from "@/types/event-category";
+import * as Yup from "yup";
+import useCreateEventCategory from "@/hooks/api/event-categories/useCreateEventcategory";
+import useGetEventCategories from "@/hooks/api/event-categories/useGetEventcategories";
 
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  eventsCount: number;
-  createdAt: string;
-}
-
-const sampleCategories: Category[] = [
-  {
-    id: "1",
-    name: "Music Festivals",
-    description: "Live music events featuring multiple artists",
-    eventsCount: 12,
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Tech Conferences",
-    description: "Professional technology and innovation events",
-    eventsCount: 8,
-    createdAt: "2024-01-20",
-  },
-];
+const CategorySchema = Yup.object().shape({
+  name: Yup.string().required("Name is required"),
+  description: Yup.string().required("Description is required"),
+});
 
 export default function CategoriesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const formik = useFormik<CategoryFormValues>({
+  const { mutateAsync: createCategory, isPending } = useCreateEventCategory();
+  const { data: categoriesData, isLoading } = useGetEventCategories({
+    take: 10,
+    page: currentPage,
+    search: searchQuery,
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
+
+  const formik = useFormik({
     initialValues: {
       name: "",
       description: "",
     },
     validationSchema: CategorySchema,
-    onSubmit: (values) => {
-      // Add your category creation/editing logic here
-      console.log("Form submitted:", values);
-      setIsDialogOpen(false);
-      formik.resetForm();
-      setEditingCategory(null);
+    onSubmit: async (values) => {
+      try {
+        await createCategory({
+          name: values.name,
+          description: values.description,
+        });
+        setIsDialogOpen(false);
+        formik.resetForm();
+        setEditingCategory(null);
+      } catch (error) {
+        console.error("Error creating category:", error);
+      }
     },
   });
 
@@ -80,11 +79,23 @@ export default function CategoriesPage() {
     setIsDialogOpen(true);
   };
 
-  const filteredCategories = sampleCategories.filter(
-    (category) =>
-      category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.description.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredCategories =
+    categoriesData?.data.filter(
+      (category) =>
+        !category.isDeleted &&
+        (category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          category.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())),
+    ) || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -99,7 +110,7 @@ export default function CategoriesPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transition-all hover:from-orange-600 hover:to-orange-700">
+            <Button className="gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white">
               <Plus className="h-4 w-4" /> Add Category
             </Button>
           </DialogTrigger>
@@ -144,9 +155,14 @@ export default function CategoriesPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md transition-all hover:from-orange-600 hover:to-orange-700"
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white"
+                disabled={isPending}
               >
-                {editingCategory ? "Save Changes" : "Create Category"}
+                {isPending
+                  ? "Processing..."
+                  : editingCategory
+                    ? "Save Changes"
+                    : "Create Category"}
               </Button>
             </form>
           </DialogContent>
@@ -166,9 +182,9 @@ export default function CategoriesPage() {
       <Card className="border-gray-200 shadow-md">
         <CardHeader className="border-b border-gray-100 pb-4">
           <CardTitle className="text-lg font-medium">
-            All Categories{" "}
+            All Categories
             <Badge variant="secondary" className="ml-2">
-              {sampleCategories.length}
+              {categoriesData?.meta.total || 0}
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -178,9 +194,8 @@ export default function CategoriesPage() {
               <TableRow className="bg-gray-50">
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Events</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Created At</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,15 +212,10 @@ export default function CategoriesPage() {
                       {category.description}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-normal">
-                        {category.eventsCount} events
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-gray-500">
                       {new Date(category.createdAt).toLocaleDateString()}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
+                    <TableCell className="text-right">
+                      <div className="flex justify-end space-x-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -227,7 +237,7 @@ export default function CategoriesPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={4} className="text-center">
                     <Alert className="mx-auto mt-4 max-w-md bg-gray-50">
                       <AlertDescription>
                         No categories found matching your search criteria.

@@ -7,4 +7,7 @@ export interface User {
   updatedAt: Date;
   referralCode: string;
   role: string;
+  profilePicture?: string;
+  phoneNumber?: string;
+  address?: string;
 }
