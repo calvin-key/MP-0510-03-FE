@@ -25,7 +25,6 @@ const LoginPage = () => {
   return (
     <main className="flex min-h-screen w-full items-center justify-center p-4">
       <Card className="flex w-full max-w-6xl overflow-hidden rounded-xl border-none shadow-2xl">
-        {/* Left side - Image with overlay text */}
         <div className="relative hidden w-1/2 md:block">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-500">
             <img
@@ -44,7 +43,6 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {/* Right side - Login form */}
         <div className="w-full bg-white p-8 md:w-1/2">
           <div className="mb-8">
             <h1 className="text-center font-serif text-3xl font-bold text-gray-900">
@@ -70,11 +68,11 @@ const LoginPage = () => {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
               />
-              {!!formik.touched.email && !!formik.errors.email && (
+              {!!formik.touched.email && !!formik.errors.email ? (
                 <p className="mt-1 text-sm text-red-500">
                   {formik.errors.email}
                 </p>
-              )}
+              ) : null}
             </div>
 
             <div>
@@ -94,11 +92,11 @@ const LoginPage = () => {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
               />
-              {!!formik.touched.password && !!formik.errors.password && (
+              {!!formik.touched.password && !!formik.errors.password ? (
                 <p className="mt-1 text-sm text-red-500">
                   {formik.errors.password}
                 </p>
-              )}
+              ) : null}
             </div>
 
             <div className="flex justify-end">

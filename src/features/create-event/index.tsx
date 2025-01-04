@@ -18,6 +18,8 @@ import CategoriesForm from "./components/CategoriesForm";
 import TicketType from "./components/TicketType";
 import useCreateEvent from "@/hooks/api/event/useCreateEvent";
 import { toast } from "react-toastify";
+import { EventData } from "@/utils/eventData";
+import { addEvent } from "@/utils/eventDataManager";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
@@ -81,6 +83,21 @@ const CreateEventPage = () => {
 
         const response = await createEvent(payload);
 
+        // Add the new event to our local event data manager
+        const newEvent: EventData = {
+          id: response.id, // Assuming the API returns an id
+          name: values.name,
+          date: new Date(values.startDate),
+          revenue: formattedTicketTypes.reduce(
+            (total, ticket) => total + ticket.price * ticket.availableSeats,
+            0,
+          ),
+          ticketsSold: 0, // Initialize to 0
+          attendance: 0,
+          attendees: [],
+        };
+        addEvent(newEvent);
+
         console.log("API Response:", response);
       } catch (error) {
         console.error("Error creating event:", error);
@@ -111,7 +128,7 @@ const CreateEventPage = () => {
 
       <form onSubmit={formik.handleSubmit} className="space-y-6">
         <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Event Details</h2>
+          <h2 className="text-lg font-semibold">Event Details</h2>
           {/* Event Title */}
           <div>
             <Label htmlFor="name">Event Title</Label>

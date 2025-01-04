@@ -11,7 +11,7 @@ const AuthProvider = ({ children }: PropsWithChildren) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const data = localStorage.getItem("blog-storage");
+    const data = localStorage.getItem("event-storage");
 
     if (data) {
       dispatch(loginAction(JSON.parse(data)));
