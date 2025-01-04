@@ -1,20 +1,11 @@
-import * as yup from "yup";
+import * as Yup from "yup";
 
-export const PasswordSettingsSchema = yup.object().shape({
-  currentPassword: yup
-    .string()
-    .required("Current password is required")
-    .min(8, "Password must be at least 8 characters"),
-  newPassword: yup
-    .string()
-    .required("New password is required")
+export const ChangePasswordSchema = Yup.object().shape({
+  password: Yup.string().required("Current password is required"),
+  newPassword: Yup.string()
     .min(8, "Password must be at least 8 characters")
-    .notOneOf(
-      [yup.ref("currentPassword")],
-      "New password must be different from current password",
-    ),
-  confirmNewPassword: yup
-    .string()
-    .required("Please confirm your new password")
-    .oneOf([yup.ref("newPassword")], "Passwords must match"),
+    .required("New password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("newPassword")], "Passwords must match")
+    .required("Confirm password is required"),
 });

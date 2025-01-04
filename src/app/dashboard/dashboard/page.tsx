@@ -1,16 +1,14 @@
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import StatisticsPage from "@/features/dashboard/sidebar-dashboard";
 import Link from "next/link";
-import EventListPage from "@/features/dashboard/event-list";
 
-const EventList = () => {
+const SidebarDashboard = () => {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">
@@ -22,17 +20,17 @@ const EventList = () => {
               <BreadcrumbItem className="hidden md:block">
                 <Link href="/dashboard">Dashboard</Link>
               </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Event List</BreadcrumbPage>
-              </BreadcrumbItem>
+              {/* <BreadcrumbSeparator className="hidden md:block" /> */}
+              {/* <BreadcrumbItem>
+                <BreadcrumbPage>Attended List</BreadcrumbPage>
+              </BreadcrumbItem> */}
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-      <EventListPage />;
+      <StatisticsPage />;
     </>
   );
 };
 
-export default EventList;
+export default SidebarDashboard;

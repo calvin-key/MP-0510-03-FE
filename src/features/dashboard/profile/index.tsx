@@ -1,92 +1,49 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useFormik } from "formik";
+import { Loader2, Camera, Copy } from "lucide-react";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { EditUserSchema } from "./schemas";
 import useGetUser from "@/hooks/api/user/useGetUser";
 import useUpdateUser from "@/hooks/api/user/useUpdateUser";
-import { updateUserAction } from "@/redux/slices/userSlice";
-import { RootState } from "@/redux/store";
-import { useFormik } from "formik";
-import { Camera, Home, Loader2, Mail, Phone, User } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { updateProfileSchema } from "./schemas";
 
 const ProfilePage = () => {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const token = session?.user.token;
-  const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user);
-  const { data, isPending: isPendingGet } = useGetUser({
-    token,
-    userId: user.id,
-  });
-  const { mutateAsync: updateUser, isPending } = useUpdateUser(token!, user.id);
+  const { data, isPending: isPendingGet } = useGetUser({ token });
+  const { mutateAsync: updateUser, isPending } = useUpdateUser();
   const [selectedImage, setSelectedImage] = useState<string>("");
   const profilePictureRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user-storage");
-    if (storedUser) {
-      dispatch(updateUserAction(JSON.parse(storedUser)));
-    }
-  }, [dispatch]);
 
   const formik = useFormik({
     initialValues: {
-      fullName: user.fullName || "",
-      email: user.email || "",
-      phoneNumber: user.phoneNumber || "",
-      address: user.address || "",
-      profilePicture: null as File | null,
+      fullName: "",
+      profilePicture: null,
+      email: "",
+      referralCode: "",
+      role: "",
     },
-    validationSchema: updateProfileSchema,
+    validationSchema: EditUserSchema,
     onSubmit: async (values) => {
-      try {
-        const formData = new FormData();
-        formData.append("fullName", values.fullName);
-        formData.append("email", values.email);
-        formData.append("phoneNumber", values.phoneNumber);
-        formData.append("address", values.address);
-        if (values.profilePicture) {
-          formData.append("profilePicture", values.profilePicture);
-        }
-
-        const updatedUser = await updateUser({
-          fullName: values.fullName,
-          email: values.email,
-          phoneNumber: values.phoneNumber,
-          address: values.address,
-          profilePicture: values.profilePicture,
-        });
-
-        dispatch(updateUserAction(updatedUser));
-        localStorage.setItem("user-storage", JSON.stringify(updatedUser));
-        setError("");
-      } catch (error) {
-        setError("Failed to update profile. Please try again.");
-      }
+      await updateUser(values);
     },
   });
 
   useEffect(() => {
     if (data) {
       formik.setValues({
-        fullName: data.fullName || "",
-        email: data.email || "",
-        phoneNumber: data.phoneNumber || "",
-        address: data.address || "",
+        fullName: data.fullName,
         profilePicture: null,
+        email: data.email || "",
+        referralCode: data.referralCode || "",
+        role: data.role || "",
       });
       setSelectedImage(data.profilePicture || "");
     }
@@ -101,188 +58,148 @@ const ProfilePage = () => {
     }
   };
 
-  const handleRemoveProfilePicture = () => {
-    formik.setFieldValue("profilePicture", null);
-    setSelectedImage("");
-    if (profilePictureRef.current) {
-      profilePictureRef.current.value = "";
-    }
+  const triggerFileInput = () => {
+    profilePictureRef.current?.click();
   };
 
-  // if (isPendingGet) {
-  //   return <div>Loading...</div>;
-  // }
+  const handleCopyReferralCode = () => {
+    navigator.clipboard.writeText(formik.values.referralCode);
+  };
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-gray-100 p-6">
-      <Card className="w-full max-w-2xl rounded-xl border border-gray-200 bg-white shadow-md">
-        <CardHeader className="border-b bg-white pb-6 pt-6">
-          <div className="flex flex-col items-center space-y-3">
-            <div className="relative">
-              <Avatar className="h-24 w-24 rounded-full border-2 border-gray-300 shadow-sm">
-                <AvatarImage
-                  src={selectedImage}
-                  className="rounded-full object-cover"
-                />
-                <AvatarFallback>UN</AvatarFallback>
-              </Avatar>
-              <label
-                htmlFor="profile-upload"
-                className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-purple-600 text-white shadow-lg transition-colors hover:bg-purple-700"
-              >
-                <Camera className="h-4 w-4" />
-              </label>
-              <input
-                id="profile-upload"
-                type="file"
-                ref={profilePictureRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleProfilePictureChange}
-              />
-            </div>
-            <div className="text-center">
-              <CardTitle className="text-2xl font-semibold text-gray-800">
-                Profile Settings
-              </CardTitle>
-              <CardDescription className="mt-1 text-sm text-gray-500">
-                Manage your personal information
-              </CardDescription>
-            </div>
-          </div>
+    <div className="px-4 py-6">
+      <Card className="h-screen w-full shadow-sm">
+        <CardHeader className="border-b pb-6 text-center">
+          <CardTitle className="text-xl sm:text-2xl">Profile</CardTitle>
+          <p className="text-sm text-gray-500">
+            This is how others will see you on the site.
+          </p>
         </CardHeader>
-        <CardContent className="mt-4 px-8">
-          <form onSubmit={formik.handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="relative">
-                <label
-                  htmlFor="fullName"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Full Name
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <User className="h-5 w-5" />
+        <CardContent className="p-4 sm:p-8">
+          <form
+            onSubmit={formik.handleSubmit}
+            className="space-y-6 sm:space-y-8"
+          >
+            {/* Profile Picture Section */}
+            <div className="flex flex-col items-center space-y-2">
+              <div
+                className="group relative cursor-pointer"
+                onClick={triggerFileInput}
+              >
+                <div className="relative h-24 w-24 overflow-hidden rounded-full bg-gray-100 ring-2 ring-gray-200 sm:h-32 sm:w-32">
+                  {selectedImage ? (
+                    <Image
+                      src={selectedImage}
+                      alt="Profile"
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center">
+                      <Camera className="h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
+                    </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 rounded-full bg-orange-500 p-2 shadow-md transition-transform hover:scale-105">
+                    <Camera className="h-3 w-3 text-white sm:h-4 sm:w-4" />
                   </div>
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    placeholder="Enter your full name"
-                    value={formik.values.fullName}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="rounded-lg border border-gray-300 pl-10 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                  />
                 </div>
-                {formik.touched.fullName && formik.errors.fullName && (
-                  <div className="mt-1 text-sm text-red-500">
+                <Input
+                  ref={profilePictureRef}
+                  type="file"
+                  className="hidden"
+                  onChange={handleProfilePictureChange}
+                  accept="image/*"
+                />
+              </div>
+              <p className="text-center text-sm text-gray-500">
+                You can edit your profile picture here.
+              </p>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-4 sm:space-y-6">
+              <div className="w-full">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  value={formik.values.fullName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  className="w-full"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  This is your public display name.
+                </p>
+                {formik.errors.fullName && formik.touched.fullName && (
+                  <p className="mt-1 text-sm text-red-500">
                     {formik.errors.fullName}
-                  </div>
+                  </p>
                 )}
               </div>
 
-              <div className="relative">
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <Mail className="h-5 w-5" />
-                  </div>
+              <div className="w-full">
+                <Label htmlFor="referralCode">Referral Code</Label>
+                <div className="flex w-full flex-col gap-2 sm:flex-row">
                   <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={formik.values.email}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="rounded-lg border border-gray-300 pl-10 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                    id="referralCode"
+                    value={formik.values.referralCode}
+                    readOnly
+                    className="w-full bg-gray-50"
                   />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCopyReferralCode}
+                    className="flex items-center justify-center gap-2 whitespace-nowrap sm:w-auto"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy
+                  </Button>
                 </div>
-                {formik.touched.email && formik.errors.email && (
-                  <div className="mt-1 text-sm text-red-500">
-                    {formik.errors.email}
-                  </div>
-                )}
+                <p className="mt-1 text-sm text-gray-500">
+                  This field is not editable.
+                </p>
               </div>
 
-              <div className="relative">
-                <label
-                  htmlFor="phoneNumber"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Phone Number
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <Input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    placeholder="Enter your phone number"
-                    value={formik.values.phoneNumber}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="rounded-lg border border-gray-300 pl-10 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                  />
-                </div>
-                {formik.touched.phoneNumber && formik.errors.phoneNumber && (
-                  <div className="mt-1 text-sm text-red-500">
-                    {formik.errors.phoneNumber}
-                  </div>
-                )}
+              <div className="w-full">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  value={formik.values.email}
+                  readOnly
+                  className="w-full bg-gray-50"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  This field is not editable.
+                </p>
               </div>
 
-              <div className="relative">
-                <label
-                  htmlFor="address"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Address
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <Home className="h-5 w-5" />
-                  </div>
-                  <Input
-                    id="address"
-                    name="address"
-                    placeholder="Enter your address"
-                    value={formik.values.address}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    className="rounded-lg border border-gray-300 pl-10 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                  />
-                </div>
-                {formik.touched.address && formik.errors.address && (
-                  <div className="mt-1 text-sm text-red-500">
-                    {formik.errors.address}
-                  </div>
-                )}
+              <div className="w-full">
+                <Label htmlFor="role">Role</Label>
+                <Input
+                  id="role"
+                  value={formik.values.role}
+                  readOnly
+                  className="w-full bg-gray-50"
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  This field is not editable.
+                </p>
               </div>
             </div>
 
-            {error && <div className="text-sm text-red-500">{error}</div>}
-
-            <div className="mt-8 flex justify-center border-t pt-6">
+            {/* Submit Button */}
+            <div className="flex justify-end pt-4">
               <Button
                 type="submit"
-                className="rounded-lg bg-purple-600 px-8 py-3 text-white shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full bg-orange-500 px-6 hover:bg-orange-600 sm:w-auto"
                 disabled={isPending}
               >
                 {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving changes...
-                  </>
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  "Save changes"
+                  "Save Changes"
                 )}
               </Button>
             </div>

@@ -89,13 +89,13 @@ export default function CategoriesPage() {
             .includes(searchQuery.toLowerCase())),
     ) || [];
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex h-screen items-center justify-center">
+  //       <div className="text-lg">Loading...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6 p-6">

@@ -1,35 +1,38 @@
 "use client";
 
+import { axiosInstance } from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import useAxios from "../../useAxios";
 
 interface ChangePasswordPayload {
-  currentPassword: string;
+  password: string;
   newPassword: string;
-  confirmNewPassword: string;
 }
 
-const useChangePassword = () => {
+const useChangePassword = (token: string) => {
   const router = useRouter();
-  const { axiosInstance } = useAxios();
 
   return useMutation({
     mutationFn: async (payload: ChangePasswordPayload) => {
       const { data } = await axiosInstance.patch(
-        "/auth/change-password",
+        "/user/change-password",
         payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
       return data;
     },
     onSuccess: () => {
-      toast.success("Password updated successfully!");
-      router.push("/dashboard/profile");
+      toast.success("Change Password success");
+      router.refresh();
     },
     onError: (error: AxiosError<any>) => {
-      toast.error(error.response?.data?.message || "Error updating password");
+      toast.error(error.response?.data?.message || error.response?.data);
     },
   });
 };

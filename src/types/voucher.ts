@@ -1,12 +1,9 @@
 export interface Voucher {
-  id: number;
-  voucherCode: string;
-  qty: number;
-  usedQty: number;
-  value: number;
-  expDate: Date;
-  event: {
-    id: number;
-    title: string; // Atau atribut lain sesuai model Event
-  };
+  eventId: string;
+  code: string;
+  description: string;
+  nominal: string;
+  quantity: string;
+  startAt: string;
+  expiresAt: string;
 }

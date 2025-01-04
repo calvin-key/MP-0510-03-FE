@@ -1,33 +1,25 @@
-"use client";
-
-import useAxios from "@/hooks/useAxios";
-import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
+// hooks/api/voucher/useCreateVoucher.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { axiosInstance } from "@/lib/axios"; // Assuming axiosInstance is exported from this file
+import { Voucher } from "@/types/voucher"; // Import the Voucher type
 import { toast } from "react-toastify";
-
-interface useCreateVoucherPayload {
-  voucherCode: string;
-  qty: number;
-  value: number;
-  expDate: string;
-  eventId: number;
-}
+import { useRouter } from "next/navigation";
+import useAxios from "@/hooks/useAxios";
+import { AxiosError } from "axios";
 
 const useCreateVoucher = () => {
   const router = useRouter();
   const { axiosInstance } = useAxios();
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: useCreateVoucherPayload) => {
-      const { data } = await axiosInstance.post("/vouchers", payload);
-      return data;
-    },
+    mutationFn: (data: Voucher) => axiosInstance.post("/vouchers", data),
     onSuccess: () => {
-      toast.success("Create voucher success");
-      router.push("/dashboard/my-event/my-vouchers");
+      toast.success("Create Voucher Success");
+      queryClient.invalidateQueries({ queryKey: ["voucher"] });
+      router.push("/");
     },
     onError: (error: AxiosError<any>) => {
-      toast.error(error.response?.data || error.response?.data.message);
+      toast.error(error.response?.data.message || error.response?.data);
     },
   });
 };

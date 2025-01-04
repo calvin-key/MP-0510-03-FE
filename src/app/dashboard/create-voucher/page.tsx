@@ -8,9 +8,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
-import EventListPage from "@/features/dashboard/event-list";
+import CreateVoucherPage from "@/features/create-voucher";
 
-const EventList = () => {
+const createVoucher = () => {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">
@@ -24,15 +24,15 @@ const EventList = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Event List</BreadcrumbPage>
+                <BreadcrumbPage>Create Voucher</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-      <EventListPage />;
+      <CreateVoucherPage />;
     </>
   );
 };
 
-export default EventList;
+export default createVoucher;

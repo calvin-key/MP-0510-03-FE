@@ -1,19 +1,16 @@
-// useGetUser.ts
 import { axiosInstance } from "@/lib/axios";
-import { UserState } from "@/redux/slices/userSlice";
 import { User } from "@/types/user";
 import { useQuery } from "@tanstack/react-query";
 
-interface GetProfileQueries {
+interface GetUserQuery {
   token: string | undefined;
-  userId?: number;
 }
 
-const useGetUser = ({ token }: GetProfileQueries) => {
+const useGetUser = ({ token }: GetUserQuery) => {
   return useQuery({
-    queryKey: ["users", token],
+    queryKey: ["user", token],
     queryFn: async () => {
-      const { data } = await axiosInstance.get<User>("users/:id", {
+      const { data } = await axiosInstance.get<User>("/user/profile", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

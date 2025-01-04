@@ -90,18 +90,18 @@ const TransactionPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <Card className="mx-auto max-w-7xl shadow-lg">
-        <CardHeader className="border-b bg-white px-6 py-4">
+    <div className="min-h-screen bg-white p-8">
+      <Card className="mx-auto max-w-7xl bg-[#FFF7E6] shadow-lg">
+        <CardHeader className="border-b bg-[#FFD48A] px-6 py-4">
           <CardTitle className="text-2xl font-bold text-gray-900">
             Transaction Management
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-gray-200">
             <Table>
               <TableHeader>
-                <TableRow className="bg-gray-50">
+                <TableRow className="bg-[#FFB347]">
                   <TableHead className="py-4 font-semibold text-gray-900">
                     Transaction ID
                   </TableHead>
@@ -129,7 +129,7 @@ const TransactionPage: React.FC = () => {
                 {transactions.map((transaction) => (
                   <TableRow
                     key={transaction.id}
-                    className="border-b hover:bg-gray-50"
+                    className="border-b hover:bg-[#FFE4B5]"
                   >
                     <TableCell className="font-medium">
                       {transaction.id}
@@ -172,7 +172,7 @@ const TransactionPage: React.FC = () => {
       </Card>
 
       <Dialog open={!!selectedTransaction} onOpenChange={handleCloseDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl bg-[#FFF7E6]">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-gray-900">
               Edit Transaction
@@ -219,11 +219,7 @@ const TransactionPage: React.FC = () => {
                     onClick={() =>
                       handleAction(selectedTransaction.id, "rejected")
                     }
-                    className={`${
-                      selectedTransaction.status === "rejected"
-                        ? "bg-rose-600 text-white"
-                        : "bg-rose-100 text-rose-800 hover:bg-rose-200"
-                    }`}
+                    className={`$ {selectedTransaction.status === "rejected" ? "bg-rose-600 text-white" : "bg-rose-100 hover:bg-rose-200" } text-rose-800`}
                   >
                     Rejected
                   </Button>
@@ -231,11 +227,7 @@ const TransactionPage: React.FC = () => {
                     onClick={() =>
                       handleAction(selectedTransaction.id, "approved")
                     }
-                    className={`${
-                      selectedTransaction.status === "approved"
-                        ? "bg-emerald-600 text-white"
-                        : "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-                    }`}
+                    className={`$ {selectedTransaction.status === "approved" ? "bg-emerald-600 text-white" : "bg-emerald-100 hover:bg-emerald-200" } text-emerald-800`}
                   >
                     Approved
                   </Button>

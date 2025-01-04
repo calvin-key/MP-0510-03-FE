@@ -1,29 +1,27 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Calendar,
   Users,
   ChevronDown,
   Tag,
-  BarChart,
   Receipt,
   Ticket,
   User,
   LogOut,
   Plus,
   List,
+  Menu,
+  X,
+  Settings,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface SidebarProps {
-  onLogout?: () => void;
-}
-
-const Sidebar = ({ onLogout }: SidebarProps) => {
+const Sidebar: React.FC = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEventMenuOpen, setIsEventMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -32,8 +30,7 @@ const Sidebar = ({ onLogout }: SidebarProps) => {
       "/dashboard/event-list",
       "/dashboard/create-event",
       "/dashboard/event-categories",
-      "/dashboard/vouchers",
-      "/dashboard/statistics",
+      "/dashboard/create-voucher",
       "/dashboard/transaction",
       "/dashboard/attended-list",
     ];
@@ -44,132 +41,166 @@ const Sidebar = ({ onLogout }: SidebarProps) => {
   }, [pathname]);
 
   return (
-    <div className="w-64 bg-white shadow-lg">
-      <div className="flex h-20 items-center px-6">
-        <h2 className="text-xl font-bold text-gray-900">Scaena's Dashboard</h2>
+    <div>
+      {/* Mobile Header */}
+      <div className="fixed left-0 top-0 z-50 flex w-full items-center justify-between bg-white p-4 shadow-md md:hidden">
+        <Button
+          variant="ghost"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          {isSidebarOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
+        </Button>
+        <h1 className="text-lg font-bold">Dashboard</h1>
       </div>
-      <div className="p-4">
-        <nav className="space-y-2">
-          <Link
-            href="/dashboard/sidebar-dashboard"
-            className={`flex items-center space-x-2 rounded-lg p-2 ${
-              pathname === "/dashboard/sidebar-dashboard"
-                ? "bg-purple-50 text-purple-700"
-                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-            }`}
-          >
-            <Calendar className="h-5 w-5" />
-            <span>Dashboard</span>
-          </Link>
 
-          <div>
-            <Button
-              variant="ghost"
-              className="w-full justify-between hover:bg-gray-50"
-              onClick={() => setIsEventMenuOpen(!isEventMenuOpen)}
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 transform bg-white shadow-lg transition-transform duration-300 md:static md:w-64 md:transform-none ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex h-screen flex-col">
+          {/* Header */}
+          <div className="flex h-20 items-center px-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              Scaena's Dashboard
+            </h2>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 space-y-2 overflow-y-auto p-4">
+            {/* Dashboard */}
+            <Link
+              href="/dashboard/dashboard"
+              className={`flex items-center space-x-2 rounded-lg p-2 ${
+                pathname === "/dashboard/dashboard"
+                  ? "bg-purple-50 text-purple-700"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
             >
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                <span>Events</span>
-              </div>
-              <ChevronDown
-                className={`h-4 w-4 transform transition-transform duration-200 ${
-                  isEventMenuOpen ? "rotate-180" : ""
-                }`}
-              />
-            </Button>
+              <Calendar className="h-5 w-5" />
+              <span>Dashboard</span>
+            </Link>
 
-            {isEventMenuOpen && (
-              <div className="ml-4 mt-2 space-y-1">
-                {[
-                  {
-                    href: "/dashboard/event-list",
-                    icon: Calendar,
-                    label: "Event List",
-                  },
-                  {
-                    href: "/dashboard/create-event",
-                    icon: Plus,
-                    label: "Create Event",
-                  },
-                  {
-                    href: "/dashboard/event-categories",
-                    icon: Tag,
-                    label: "Event Category",
-                  },
-                  {
-                    href: "/dashboard/vouchers",
-                    icon: Ticket,
-                    label: "Voucher",
-                  },
-                  {
-                    href: "/dashboard/statistics",
-                    icon: BarChart,
-                    label: "Statistics",
-                  },
-                  {
-                    href: "/dashboard/transaction",
-                    icon: Receipt,
-                    label: "Transaction",
-                  },
-                  {
-                    href: "/dashboard/attended-list",
-                    icon: List,
-                    label: "Attended List",
-                  },
-                ].map(({ href, icon: Icon, label }) => (
-                  <Link
-                    key={href}
-                    href={href}
-                    className={`flex items-center space-x-2 rounded-lg p-2 text-sm ${
-                      pathname === href
-                        ? "bg-purple-50 text-purple-700"
-                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{label}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+            {/* Events Section */}
+            <div>
+              <Button
+                variant="ghost"
+                className="w-full justify-between hover:bg-gray-50"
+                onClick={() => setIsEventMenuOpen(!isEventMenuOpen)}
+              >
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  <span>Events</span>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 transform transition-transform duration-200 ${
+                    isEventMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </Button>
+              {isEventMenuOpen && (
+                <div className="ml-4 mt-2 space-y-1">
+                  {[
+                    {
+                      href: "/dashboard/event-list",
+                      icon: Calendar,
+                      label: "Event List",
+                    },
+                    {
+                      href: "/dashboard/create-event",
+                      icon: Plus,
+                      label: "Create Event",
+                    },
+                    {
+                      href: "/dashboard/event-categories",
+                      icon: Tag,
+                      label: "Event Category",
+                    },
+                    {
+                      href: "/dashboard/create-voucher",
+                      icon: Ticket,
+                      label: "Voucher",
+                    },
+                    {
+                      href: "/dashboard/transaction",
+                      icon: Receipt,
+                      label: "Transaction",
+                    },
+                    {
+                      href: "/dashboard/attended-list",
+                      icon: List,
+                      label: "Attended List",
+                    },
+                  ].map(({ href, icon: Icon, label }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`flex items-center space-x-2 rounded-lg p-2 text-sm ${
+                        pathname === href
+                          ? "bg-purple-50 text-purple-700"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <div className="mt-4 border-t pt-4">
-            <nav className="space-y-2">
-              <Link
-                href="/dashboard/setting"
-                className={`flex items-center space-x-2 rounded-lg p-2 ${
-                  pathname === "/dashboard/settings"
-                    ? "bg-purple-50 text-purple-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                <Settings className="h-5 w-5" />
-                <span>Settings</span>
-              </Link>
-              <Link
-                href="/dashboard/profile"
-                className={`flex items-center space-x-2 rounded-lg p-2 ${
-                  pathname === "/dashboard/profile"
-                    ? "bg-purple-50 text-purple-700"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
-              >
-                <User className="h-5 w-5" />
-                <span>Profile</span>
-              </Link>
-              <button
-                onClick={onLogout}
-                className="flex w-full items-center space-x-2 rounded-lg p-2 text-red-600 hover:bg-gray-50 hover:text-red-700"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Logout</span>
-              </button>
-            </nav>
+            {/* Settings */}
+            <Link
+              href="/dashboard/setting"
+              className={`flex items-center space-x-2 rounded-lg p-2 ${
+                pathname === "/dashboard/setting"
+                  ? "bg-purple-50 text-purple-700"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+            >
+              <Settings className="h-5 w-5" />
+              <span>Settings</span>
+            </Link>
+
+            {/* Profile */}
+            <Link
+              href="/dashboard/profile"
+              className={`flex items-center space-x-2 rounded-lg p-2 ${
+                pathname === "/dashboard/profile"
+                  ? "bg-purple-50 text-purple-700"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+            >
+              <User className="h-5 w-5" />
+              <span>Profile</span>
+            </Link>
+          </nav>
+
+          {/* Logout */}
+          <div className="border-t p-4">
+            <button
+              onClick={() => alert("Logged out")}
+              className="flex w-full items-center space-x-2 rounded-lg p-2 text-red-600 hover:bg-gray-50 hover:text-red-700"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
+            </button>
           </div>
-        </nav>
+        </div>
       </div>
+
+      {/* Overlay for Mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black opacity-50 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        ></div>
+      )}
     </div>
   );
 };
