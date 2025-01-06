@@ -2,13 +2,15 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import StatisticsPage from "@/features/dashboard/sidebar-dashboard";
+import TablePayments from "@/features/dashboard/confirmation";
 import Link from "next/link";
 
-const SidebarDashboard = () => {
+const Transaction = () => {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">
@@ -20,17 +22,17 @@ const SidebarDashboard = () => {
               <BreadcrumbItem className="hidden md:block">
                 <Link href="/dashboard">Dashboard</Link>
               </BreadcrumbItem>
-              {/* <BreadcrumbSeparator className="hidden md:block" /> */}
-              {/* <BreadcrumbItem>
-                <BreadcrumbPage>Attended List</BreadcrumbPage>
-              </BreadcrumbItem> */}
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Transaction</BreadcrumbPage>
+              </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
-      <StatisticsPage />;
+      <TablePayments />
     </>
   );
 };
 
-export default SidebarDashboard;
+export default Transaction;

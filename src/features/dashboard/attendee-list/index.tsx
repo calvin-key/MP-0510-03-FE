@@ -1,7 +1,10 @@
-// src/app/attendedList.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import useGetEvents from "@/hooks/api/event/useGetEvents";
+import useGetAttendeeList from "@/hooks/api/attendee-list/useGetAttendeeList";
+import { Loader2, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,131 +20,267 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { toast } from "react-toastify";
-import useAttendeeList from "@/hooks/api/auth/useAttendeeList";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 
-export default function AttendedList() {
-  const [selectedEvent, setSelectedEvent] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState("eventStartDate");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+interface Attendee {
+  id: number;
+  name: string;
+  email: string;
+  ticketDetails: {
+    type: string;
+    quantity: number;
+    pricePerUnit: number;
+  }[];
+  totalQuantity: number;
+  totalPrice: number;
+  purchaseDate: string;
+}
 
-  const { data, isLoading, error } = useAttendeeList({
-    page: currentPage,
-    take: 10,
-    sortBy,
-    sortOrder,
-    eventId: selectedEvent === "all" ? undefined : Number(selectedEvent),
-    search: searchQuery,
+const AttendeeListPage = () => {
+  const session = useSession();
+  const [eventId, setEventId] = useState<number | undefined>(undefined);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sortBy] = useState("createdAt");
+  const [sortOrder] = useState<"asc" | "desc">("desc");
+
+  const { data: events, isPending: eventsLoading } = useGetEvents({
+    category: session.data?.user.id?.toString(),
+    take: 100,
+    sortBy: "createdAt",
+    sortOrder: "desc",
   });
 
-  // Handle error with toast
-  useEffect(() => {
-    if (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch attendee list",
-      );
-    }
-  }, [error]);
+  const { data: attendeeList, isPending: attendeesLoading } =
+    useGetAttendeeList({
+      eventId,
+      page,
+      take: 5,
+      search,
+      sortBy,
+      sortOrder,
+    });
 
-  if (isLoading) {
+  const onPageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  if (eventsLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
+  if (!events?.data.length) {
+    return (
+      <div className="container mx-auto py-10">
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Visitor List</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="py-10 text-center text-muted-foreground">
+              No events available
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const totalPages = attendeeList?.meta.totalPages ?? 1;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Attendee List</h1>
-      </div>
+    <div className="container mx-auto py-10">
+      <Card>
+        <CardHeader>
+          <CardTitle>Daftar Pengunjung Event</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6 flex flex-col gap-4 md:flex-row">
+            <Select
+              onValueChange={(value) =>
+                setEventId(value ? Number(value) : undefined)
+              }
+            >
+              <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Pilih Event" />
+              </SelectTrigger>
+              <SelectContent>
+                {events?.data.map((event) => (
+                  <SelectItem key={event.id} value={event.id.toString()}>
+                    {event.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search attendees..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by event" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Events</SelectItem>
-            {/* Event list will come from your data */}
-          </SelectContent>
-        </Select>
-      </div>
+            <div className="relative w-full md:w-[300px]">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cari pengunjung..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Event Name</TableHead>
-              <TableHead>Ticket Type</TableHead>
-              <TableHead>Available Seats</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Revenue</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data?.data.map((attendee) => (
-              <TableRow key={attendee.id}>
-                <TableCell>{attendee.eventName}</TableCell>
-                <TableCell>{attendee.ticketType}</TableCell>
-                <TableCell>{attendee.availableSeats}</TableCell>
-                <TableCell>${attendee.price.toFixed(2)}</TableCell>
-                <TableCell>${attendee.revenue.toFixed(2)}</TableCell>
-                <TableCell>
-                  {new Date(attendee.eventStartDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {new Date(attendee.eventEndDate).toLocaleDateString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+          {attendeesLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-12 w-full animate-pulse rounded-md bg-muted"
+                />
+              ))}
+            </div>
+          ) : !attendeeList?.data.length ? (
+            <div className="py-10 text-center text-muted-foreground">
+              Tidak ada data pengunjung
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-center">Nama</TableHead>
+                    <TableHead className="text-center">Email</TableHead>
+                    <TableHead className="text-center">Detail Tiket</TableHead>
+                    <TableHead className="text-center">Total Tiket</TableHead>
+                    <TableHead className="text-center">
+                      Total Pembayaran
+                    </TableHead>
+                    <TableHead className="text-center">
+                      Tanggal Pembelian
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {attendeeList?.data.map((attendee) => (
+                    <TableRow key={attendee.id}>
+                      <TableCell className="text-center">
+                        {attendee.name}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {attendee.email}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {attendee.ticketDetails.map((ticket, idx) => (
+                          <div key={idx}>
+                            {ticket.type}: {ticket.quantity}x @
+                            {new Intl.NumberFormat("id-ID", {
+                              style: "currency",
+                              currency: "IDR",
+                            }).format(ticket.pricePerUnit)}
+                          </div>
+                        ))}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {attendee.totalQuantity}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {new Intl.NumberFormat("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                        }).format(attendee.totalPrice)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {new Date(attendee.purchaseDate).toLocaleDateString(
+                          "id-ID",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
 
-      {data && data.meta.totalPages > 1 && (
-        <div className="flex justify-end gap-2">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-md bg-gray-100 px-4 py-2 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="px-4 py-2">
-            Page {currentPage} of {data.meta.totalPages}
-          </span>
-          <button
-            disabled={currentPage === data.meta.totalPages}
-            onClick={() =>
-              setCurrentPage((prev) =>
-                Math.min(data.meta.totalPages || prev, prev + 1),
-              )
-            }
-            className="rounded-md bg-gray-100 px-4 py-2 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
+          {attendeeList && attendeeList.meta.totalPages > 1 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onPageChange(Math.max(1, page - 1))}
+                      className="cursor-pointer"
+                      disabled={page === 1}
+                    >
+                      <PaginationPrevious className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+
+                  {[...Array(totalPages)].map((_, idx) => {
+                    const pageNum = idx + 1;
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      (pageNum >= page - 1 && pageNum <= page + 1)
+                    ) {
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <Button
+                            variant={page === pageNum ? "default" : "outline"}
+                            size="icon"
+                            onClick={() => onPageChange(pageNum)}
+                            className="cursor-pointer"
+                          >
+                            {pageNum}
+                          </Button>
+                        </PaginationItem>
+                      );
+                    } else if (pageNum === page - 2 || pageNum === page + 2) {
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  })}
+
+                  <PaginationItem>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() =>
+                        onPageChange(Math.min(totalPages, page + 1))
+                      }
+                      className="cursor-pointer"
+                      disabled={page === totalPages}
+                    >
+                      <PaginationNext className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default AttendeeListPage;

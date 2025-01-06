@@ -1,29 +1,40 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import useGetUser from "@/hooks/api/user/useGetUser";
 import {
   Calendar,
-  Users,
   ChevronDown,
-  Tag,
+  List,
+  LogOut,
+  Menu,
+  Plus,
   Receipt,
+  Settings,
+  Tag,
   Ticket,
   User,
-  LogOut,
-  Plus,
-  List,
-  Menu,
+  Users,
   X,
-  Settings,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 const Sidebar: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isEventMenuOpen, setIsEventMenuOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const token = session?.user?.token;
+
+  // Get real-time user data
+  const { data: userData, refetch: refetchUser } = useGetUser({
+    token,
+  });
 
   useEffect(() => {
     const eventRelatedPaths = [
@@ -31,7 +42,7 @@ const Sidebar: React.FC = () => {
       "/dashboard/create-event",
       "/dashboard/event-categories",
       "/dashboard/create-voucher",
-      "/dashboard/transaction",
+      "/dashboard/confirmation",
       "/dashboard/attended-list",
     ];
 
@@ -39,6 +50,17 @@ const Sidebar: React.FC = () => {
       setIsEventMenuOpen(true);
     }
   }, [pathname]);
+
+  useEffect(() => {
+    if (pathname === "/dashboard/profile") {
+      refetchUser();
+    }
+  }, [pathname, refetchUser]);
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push("/login");
+  };
 
   return (
     <div>
@@ -75,10 +97,10 @@ const Sidebar: React.FC = () => {
           <nav className="flex-1 space-y-2 overflow-y-auto p-4">
             {/* Dashboard */}
             <Link
-              href="/dashboard/dashboard"
+              href="/dashboard"
               className={`flex items-center space-x-2 rounded-lg p-2 ${
-                pathname === "/dashboard/dashboard"
-                  ? "bg-purple-50 text-purple-700"
+                pathname === "/dashboard"
+                  ? "bg-orange-50 text-orange-700"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`}
             >
@@ -127,9 +149,9 @@ const Sidebar: React.FC = () => {
                       label: "Voucher",
                     },
                     {
-                      href: "/dashboard/transaction",
+                      href: "/dashboard/confirmation",
                       icon: Receipt,
-                      label: "Transaction",
+                      label: "Confirmation",
                     },
                     {
                       href: "/dashboard/attended-list",
@@ -142,7 +164,7 @@ const Sidebar: React.FC = () => {
                       href={href}
                       className={`flex items-center space-x-2 rounded-lg p-2 text-sm ${
                         pathname === href
-                          ? "bg-purple-50 text-purple-700"
+                          ? "bg-orange-50 text-orange-700"
                           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                       }`}
                     >
@@ -159,7 +181,7 @@ const Sidebar: React.FC = () => {
               href="/dashboard/setting"
               className={`flex items-center space-x-2 rounded-lg p-2 ${
                 pathname === "/dashboard/setting"
-                  ? "bg-purple-50 text-purple-700"
+                  ? "bg-orange-50 text-orange-700"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`}
             >
@@ -172,7 +194,7 @@ const Sidebar: React.FC = () => {
               href="/dashboard/profile"
               className={`flex items-center space-x-2 rounded-lg p-2 ${
                 pathname === "/dashboard/profile"
-                  ? "bg-purple-50 text-purple-700"
+                  ? "bg-orange-50 text-orange-700"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`}
             >
@@ -181,16 +203,43 @@ const Sidebar: React.FC = () => {
             </Link>
           </nav>
 
-          {/* Logout */}
-          <div className="border-t p-4">
-            <button
-              onClick={() => alert("Logged out")}
-              className="flex w-full items-center space-x-2 rounded-lg p-2 text-red-600 hover:bg-gray-50 hover:text-red-700"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Logout</span>
-            </button>
-          </div>
+          {/* Profile Footer */}
+          {userData && (
+            <div className="border-t p-4">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-10 w-10 ring-2 ring-primary/10">
+                    <AvatarImage
+                      src={userData.profilePicture || ""}
+                      alt={userData.fullName || "User"}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {userData.fullName?.charAt(0) || "PP"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">
+                      {userData.fullName}
+                    </span>
+                    <Link
+                      href="/dashboard/profile"
+                      className="text-sm text-gray-500 hover:text-orange-700"
+                    >
+                      View Profile
+                    </Link>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  className="p-2 text-gray-600 hover:bg-red-50 hover:text-red-700"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

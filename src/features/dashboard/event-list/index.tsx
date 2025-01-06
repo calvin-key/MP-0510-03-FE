@@ -27,51 +27,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-interface Event {
-  id: string;
-  title: string;
-  category: string;
-  date: string;
-  location: string;
-  status: "upcoming" | "ongoing" | "completed";
-  attendees: number;
-  price: number;
-  image: string;
-}
+import useGetEvents from "@/hooks/api/event/useGetEvents";
+import LoadingScreen from "@/components/LoadingScreen";
+import { PageableResponse } from "@/types/pagination";
+import { Event } from "@/types/event";
 
 interface FilterFormValues {
   searchQuery: string;
   category: string;
+  city: string;
 }
-
-const sampleEvents: Event[] = [
-  {
-    id: "1",
-    title: "Summer Music Festival 2024",
-    category: "Music",
-    date: "2024-07-15",
-    location: "Central Park, NY",
-    status: "upcoming",
-    attendees: 500,
-    price: 99.99,
-    image: "/api/placeholder/400/200",
-  },
-  {
-    id: "2",
-    title: "Tech Conference 2024",
-    category: "Technology",
-    date: "2024-08-20",
-    location: "Convention Center, SF",
-    status: "upcoming",
-    attendees: 300,
-    price: 199.99,
-    image: "/api/placeholder/400/200",
-  },
-];
 
 const categories = [
   { value: "all", label: "All Categories" },
@@ -82,40 +50,55 @@ const categories = [
 
 export default function EventListPage() {
   const router = useRouter();
+  const [currentPage, setCurrentPage] = React.useState(0);
 
   const formik = useFormik<FilterFormValues>({
     initialValues: {
       searchQuery: "",
       category: "all",
+      city: "",
     },
     onSubmit: (values) => {
       console.log("Filter values:", values);
     },
   });
 
-  const filteredEvents = sampleEvents.filter((event) => {
-    const matchesSearch = event.title
-      .toLowerCase()
-      .includes(formik.values.searchQuery.toLowerCase());
-    const matchesCategory =
-      formik.values.category === "all" ||
-      event.category.toLowerCase() === formik.values.category;
-    return matchesSearch && matchesCategory;
+  const { data, isLoading, error } = useGetEvents({
+    page: currentPage,
+    search: formik.values.searchQuery,
+    category:
+      formik.values.category !== "all" ? formik.values.category : undefined,
+    city: formik.values.city || undefined,
   });
 
-  const getStatusColor = (status: Event["status"]) => {
+  const getStatusColor = (startDate: Date, endDate: Date) => {
+    const now = new Date();
     const baseStyles = "rounded-full px-2 py-1 text-xs font-medium text-white";
-    switch (status) {
-      case "upcoming":
-        return `${baseStyles} bg-gradient-to-r from-blue-500 to-blue-600`;
-      case "ongoing":
-        return `${baseStyles} bg-gradient-to-r from-green-500 to-green-600`;
-      case "completed":
-        return `${baseStyles} bg-gradient-to-r from-gray-500 to-gray-600`;
-      default:
-        return `${baseStyles} bg-gradient-to-r from-gray-500 to-gray-600`;
+
+    if (now < startDate) {
+      return `${baseStyles} bg-gradient-to-r from-blue-500 to-blue-600`;
+    } else if (now >= startDate && now <= endDate) {
+      return `${baseStyles} bg-gradient-to-r from-green-500 to-green-600`;
+    } else {
+      return `${baseStyles} bg-gradient-to-r from-gray-500 to-gray-600`;
     }
   };
+
+  if (isLoading) return <LoadingScreen />;
+  if (error)
+    return (
+      <Alert>
+        <AlertDescription>
+          Error loading events: {(error as Error).message}
+        </AlertDescription>
+      </Alert>
+    );
+
+  const events = (data as PageableResponse<Event>)?.data || [];
+  const totalPages = (data as PageableResponse<Event>)?.meta?.totalPages || 1;
+  const currentPageNumber = (data as PageableResponse<Event>)?.meta?.page || 0;
+  const isLastPage = currentPageNumber >= totalPages - 1;
+  const isFirstPage = currentPageNumber === 0;
 
   return (
     <div className="space-y-8 p-6">
@@ -161,92 +144,136 @@ export default function EventListPage() {
               ))}
             </SelectContent>
           </Select>
+          <Input
+            name="city"
+            placeholder="Enter city..."
+            value={formik.values.city}
+            onChange={formik.handleChange}
+            className="w-full md:w-[200px]"
+          />
         </div>
       </form>
 
-      {filteredEvents.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event) => (
-            <Card
-              key={event.id}
-              className="group overflow-hidden border-gray-200 transition-all duration-300 hover:shadow-lg"
-            >
-              <div className="relative">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                <Badge
-                  className={`absolute left-4 top-4 ${getStatusColor(
-                    event.status,
-                  )}`}
-                >
-                  {event.status}
-                </Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-2"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem className="gap-2">
-                      Edit <ChevronRight className="ml-auto h-4 w-4" />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2">
-                      View Details <ChevronRight className="ml-auto h-4 w-4" />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <CardContent className="p-4">
-                <h3 className="mb-3 text-xl font-bold tracking-tight">
-                  {event.title}
-                </h3>
-
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    {new Date(event.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    {event.location}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-400" />
-                    {event.attendees.toLocaleString()} attendees
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-bold text-orange-600">
-                    ${event.price.toFixed(2)}
-                  </span>
+      {events.length > 0 ? (
+        <>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {events.map((event: Event) => (
+              <Card
+                key={event.id}
+                className="group overflow-hidden border-gray-200 transition-all duration-300 hover:shadow-lg"
+              >
+                <div className="relative">
+                  <img
+                    src={event.image || "/api/placeholder/400/200"}
+                    alt={event.name}
+                    className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
                   <Badge
-                    variant="outline"
-                    className="border-orange-200 bg-orange-50 text-orange-600"
+                    className={getStatusColor(event.startDate, event.endDate)}
                   >
-                    {event.category}
+                    {new Date() < event.startDate
+                      ? "upcoming"
+                      : new Date() > event.endDate
+                        ? "completed"
+                        : "ongoing"}
                   </Badge>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-2"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem
+                        onClick={() =>
+                          router.push(`/dashboard/update-event/${event.id}`)
+                        }
+                        className="gap-2"
+                      >
+                        Edit <ChevronRight className="ml-auto h-4 w-4" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="gap-2">
+                        View Details{" "}
+                        <ChevronRight className="ml-auto h-4 w-4" />
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-600">
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+
+                <CardContent className="p-4">
+                  <h3 className="mb-3 text-xl font-bold tracking-tight">
+                    {event.name}
+                  </h3>
+
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gray-400" />
+                      {event.startDate.toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      {event.location.city}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4 text-gray-400" />
+                      {event.ticketTypes
+                        .reduce(
+                          (total, ticket) => total + ticket.availableSeats,
+                          0,
+                        )
+                        .toLocaleString()}{" "}
+                      seats available
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-lg font-bold text-orange-600">
+                      {event.lowestPrice.toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                      })}
+                    </span>
+                    <Badge
+                      variant="outline"
+                      className="border-orange-200 bg-orange-50 text-orange-600"
+                    >
+                      {event.eventCategories[0]?.category.name ||
+                        "Uncategorized"}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="flex justify-center gap-2">
+            <Button
+              variant="outline"
+              disabled={isFirstPage}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              disabled={isLastPage}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        </>
       ) : (
         <Alert className="mx-auto mt-8 max-w-md bg-gray-50">
           <AlertDescription className="text-center">

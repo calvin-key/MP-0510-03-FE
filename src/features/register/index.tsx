@@ -18,6 +18,7 @@ import { RegisterSchema } from "./schemas";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Coins, Gift } from "lucide-react";
 
 const RegisterPage = () => {
   const { mutateAsync: register, isPending } = useRegister();
@@ -51,11 +52,21 @@ const RegisterPage = () => {
               </div>
               <div className="relative z-10 flex h-full flex-col items-center justify-center text-center font-serif">
                 <h2 className="text-shadow-md text-3xl font-extrabold text-white lg:text-4xl">
-                  Welcome!
+                  Welcome to Our Platform!
                 </h2>
                 <p className="mt-4 text-lg font-medium text-white lg:text-xl">
                   "Tickets Made Simple, Experiences Made Special."
                 </p>
+                <div className="mt-4 space-y-3 text-white">
+                  <p className="flex items-center gap-2">
+                    <Gift className="h-5 w-5" />
+                    Get exclusive rewards
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <Coins className="h-5 w-5" />
+                    Earn points with referrals
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -65,6 +76,9 @@ const RegisterPage = () => {
               <h1 className="font-serif text-2xl font-extrabold text-gray-800 md:text-3xl lg:text-4xl">
                 Create Account Here
               </h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Join us and start your journey today
+              </p>
             </div>
 
             {formik.status && (

@@ -25,3 +25,13 @@ export interface Event {
   // ticketTypes: [{ price: number }];
   lowestPrice: number;
 }
+
+export interface EventData {
+  id: number;
+  name: string;
+  date: Date;
+  ticketsSold: number;
+  revenue: number;
+  attendance: number;
+  // attendees: Attendee[];
+}

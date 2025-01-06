@@ -30,7 +30,7 @@ const Profile = ({ params }: { params: { id: string } }) => {
           </Breadcrumb>
         </div>
       </header>
-      <ProfilePage id={parseInt(params.id)} />;
+      <ProfilePage />
     </>
   );
 };

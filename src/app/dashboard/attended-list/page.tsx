@@ -30,7 +30,7 @@ const AttendedList = () => {
           </Breadcrumb>
         </div>
       </header>
-      <AttendeeList />;
+      <AttendeeList />
     </>
   );
 };

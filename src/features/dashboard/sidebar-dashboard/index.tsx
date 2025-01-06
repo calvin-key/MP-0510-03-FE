@@ -16,24 +16,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  getEventsByDay,
-  getEventsByMonth,
-  getEventsByYear,
-} from "@/utils/eventDataManager";
-import { AnnualView } from "../sidebar-dashboard/components/AnnualView";
-import { MonthlyView } from "../sidebar-dashboard/components/MonthlyView";
-import { DailyView } from "../sidebar-dashboard/components/DailyView";
 import { CalendarIcon, BarChart2, PieChart, LineChart } from "lucide-react";
+import { processStatisticsData } from "@/utils/eventDataManager";
+import useGetEventStatistics from "@/hooks/api/statistic/useGetEventsStatistic";
+import { EventData, Event } from "@/types/event";
+import { EventStatistics } from "@/types/eventStatistic";
+import { AnnualView } from "./components/AnnualView";
+import { MonthlyView } from "./components/MonthlyView";
+import { DailyView } from "./components/DailyView";
 
 const StatisticsPage = () => {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedDay, setSelectedDay] = useState(new Date().getDate());
+  const [selectedYear, setSelectedYear] = useState(
+    new Date().getFullYear().toString(),
+  );
+  const [selectedMonth, setSelectedMonth] = useState(
+    (new Date().getMonth() + 1).toString().padStart(2, "0"),
+  );
+  const [selectedDay, setSelectedDay] = useState(
+    new Date().getDate().toString().padStart(2, "0"),
+  );
 
-  const yearlyData = getEventsByYear(selectedYear);
-  const monthlyData = getEventsByMonth(selectedYear, selectedMonth);
-  const dailyData = getEventsByDay(selectedYear, selectedMonth, selectedDay);
+  const {
+    data: statistics,
+    isLoading,
+    error,
+  } = useGetEventStatistics({
+    year: selectedYear,
+    month: selectedMonth,
+    day: selectedDay,
+  });
+
+  const processDataForView = (): EventData[] => {
+    if (!statistics) return [];
+    return processStatisticsData(statistics).map((data) => ({
+      ...data,
+      // attendees: [] as Attendee[], // Initialize empty attendees array
+    }));
+  };
+
+  const viewData = processDataForView();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-lg">Loading statistics...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-lg text-red-500">
+          Error loading statistics: {error.message}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -79,7 +118,8 @@ const StatisticsPage = () => {
                   Event data for the year {selectedYear}
                 </CardDescription>
                 <Select
-                  onValueChange={(value) => setSelectedYear(parseInt(value))}
+                  value={selectedYear}
+                  onValueChange={(value) => setSelectedYear(value)}
                 >
                   <SelectTrigger className="mb-6 w-full sm:w-[200px]">
                     <CalendarIcon className="mr-2 h-4 w-4" />
@@ -96,19 +136,23 @@ const StatisticsPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <AnnualView data={yearlyData} />
+                <AnnualView data={viewData} />
               </TabsContent>
               <TabsContent value="monthly" className="mt-6">
                 <CardDescription className="mb-4">
                   Event data for{" "}
-                  {new Date(selectedYear, selectedMonth).toLocaleString(
-                    "default",
-                    { month: "long", year: "numeric" },
-                  )}
+                  {new Date(
+                    parseInt(selectedYear),
+                    parseInt(selectedMonth) - 1,
+                  ).toLocaleString("default", {
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </CardDescription>
                 <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                   <Select
-                    onValueChange={(value) => setSelectedYear(parseInt(value))}
+                    value={selectedYear}
+                    onValueChange={(value) => setSelectedYear(value)}
                   >
                     <SelectTrigger className="w-full sm:w-[200px]">
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -126,7 +170,8 @@ const StatisticsPage = () => {
                     </SelectContent>
                   </Select>
                   <Select
-                    onValueChange={(value) => setSelectedMonth(parseInt(value))}
+                    value={selectedMonth}
+                    onValueChange={(value) => setSelectedMonth(value)}
                   >
                     <SelectTrigger className="w-full sm:w-[200px]">
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -134,7 +179,10 @@ const StatisticsPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {[...Array(12)].map((_, i) => (
-                        <SelectItem key={i} value={i.toString()}>
+                        <SelectItem
+                          key={i}
+                          value={(i + 1).toString().padStart(2, "0")}
+                        >
                           {new Date(0, i).toLocaleString("default", {
                             month: "long",
                           })}
@@ -143,20 +191,21 @@ const StatisticsPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <MonthlyView data={monthlyData} />
+                <MonthlyView data={viewData} />
               </TabsContent>
               <TabsContent value="daily" className="mt-6">
                 <CardDescription className="mb-4">
                   Event data for{" "}
                   {new Date(
-                    selectedYear,
-                    selectedMonth,
-                    selectedDay,
+                    parseInt(selectedYear),
+                    parseInt(selectedMonth) - 1,
+                    parseInt(selectedDay),
                   ).toLocaleDateString()}
                 </CardDescription>
                 <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                   <Select
-                    onValueChange={(value) => setSelectedYear(parseInt(value))}
+                    value={selectedYear}
+                    onValueChange={(value) => setSelectedYear(value)}
                   >
                     <SelectTrigger className="w-full sm:w-[200px]">
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -174,7 +223,8 @@ const StatisticsPage = () => {
                     </SelectContent>
                   </Select>
                   <Select
-                    onValueChange={(value) => setSelectedMonth(parseInt(value))}
+                    value={selectedMonth}
+                    onValueChange={(value) => setSelectedMonth(value)}
                   >
                     <SelectTrigger className="w-full sm:w-[200px]">
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -182,7 +232,10 @@ const StatisticsPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {[...Array(12)].map((_, i) => (
-                        <SelectItem key={i} value={i.toString()}>
+                        <SelectItem
+                          key={i}
+                          value={(i + 1).toString().padStart(2, "0")}
+                        >
                           {new Date(0, i).toLocaleString("default", {
                             month: "long",
                           })}
@@ -191,7 +244,8 @@ const StatisticsPage = () => {
                     </SelectContent>
                   </Select>
                   <Select
-                    onValueChange={(value) => setSelectedDay(parseInt(value))}
+                    value={selectedDay}
+                    onValueChange={(value) => setSelectedDay(value)}
                   >
                     <SelectTrigger className="w-full sm:w-[200px]">
                       <CalendarIcon className="mr-2 h-4 w-4" />
@@ -199,14 +253,17 @@ const StatisticsPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {[...Array(31)].map((_, i) => (
-                        <SelectItem key={i} value={(i + 1).toString()}>
+                        <SelectItem
+                          key={i}
+                          value={(i + 1).toString().padStart(2, "0")}
+                        >
                           {i + 1}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <DailyView data={dailyData} />
+                <DailyView data={viewData} />
               </TabsContent>
             </CardContent>
           </Tabs>

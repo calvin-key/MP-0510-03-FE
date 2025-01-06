@@ -16,7 +16,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { aggregateDataByMonth, EventData } from "@/utils/eventData";
+import { EventData } from "@/types/event";
+import { aggregateDataByMonth } from "@/utils/eventDataManager";
 
 export function AnnualView({ data }: { data: EventData[] }) {
   const monthlyData = aggregateDataByMonth(data);
