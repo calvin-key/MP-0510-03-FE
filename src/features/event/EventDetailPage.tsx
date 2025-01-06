@@ -8,12 +8,15 @@ import { TransactionModal } from "./components/TransactionModal";
 import { FC } from "react";
 import useGetEvent from "@/hooks/api/event/useGetEvent";
 import Markdown from "@/components/Markdown";
+import { useSession } from "next-auth/react";
+import EventDetailSkeleton from "./components/EventDetailSkeleton";
 
 interface EventDetailPageProps {
   eventId: number;
 }
 
 const EventDetailPage: FC<EventDetailPageProps> = ({ eventId }) => {
+  const session = useSession();
   const { data, isPending: isPendingGet } = useGetEvent(eventId);
 
   const formatToIDR = (amount: number): string => {
@@ -24,7 +27,7 @@ const EventDetailPage: FC<EventDetailPageProps> = ({ eventId }) => {
   };
 
   if (isPendingGet) {
-    return <div>loading...</div>;
+    return <EventDetailSkeleton />;
   }
 
   if (!data) {
@@ -42,8 +45,8 @@ const EventDetailPage: FC<EventDetailPageProps> = ({ eventId }) => {
         />
       </div>
 
-      <div className="flex flex-col justify-between gap-9 py-10 md:flex-row">
-        <div className="space-y-14">
+      <div className="relative flex flex-col gap-9 py-10 lg:flex-row">
+        <div className="flex-1 space-y-14 lg:max-w-[60%]">
           <h1 className="text-3xl font-bold md:text-4xl">{data.name}</h1>
 
           <div className="flex w-fit items-center gap-7 rounded-lg bg-orange-100 p-5">
@@ -120,22 +123,36 @@ const EventDetailPage: FC<EventDetailPageProps> = ({ eventId }) => {
           </div>
         </div>
 
-        <div className="sticky bottom-4 h-fit space-y-3 rounded-lg border-[1px] border-gray-200 bg-[#f7fafe] p-5 duration-100 hover:shadow-lg hover:shadow-orange-300 md:top-7 md:w-4/12">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold">Available Tickets</h2>
+        <div className="sticky bottom-0 md:top-7 lg:w-[35%]">
+          <div className="sticky top-7 rounded-lg border-[1px] border-gray-200 bg-[#f7fafe] p-5 duration-100 hover:shadow-lg hover:shadow-orange-300">
             <div className="space-y-2">
-              {data.ticketTypes.map((ticket, index) => (
-                <div key={index} className="flex justify-between">
-                  <h3 className="font-semibold">{ticket.ticketType}</h3>
-                  <p>{formatToIDR(ticket.price)}</p>
-                </div>
-              ))}
+              <h2 className="text-2xl font-semibold">Available Tickets</h2>
+              <div className="space-y-2">
+                {data.ticketTypes.map((ticket, index) => (
+                  <div key={index} className="flex justify-between">
+                    <h3 className="font-semibold">{ticket.ticketType}</h3>
+                    <p>{formatToIDR(ticket.price)}</p>
+                  </div>
+                ))}
+              </div>
             </div>
+            <TransactionModal
+              eventId={eventId}
+              eventName={data.name}
+              location={`${data.address}, ${data.location.city}`}
+              dateTime={new Date(data.startDate).toLocaleString("en-ID", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              ticketTypes={data.ticketTypes}
+              userPoints={session.data?.user.pointsBalance || 0} // You'll need to get this from your auth context or user data
+              availableVouchers={data.vouchers}
+            />
           </div>
-          <TransactionModal />
-          {/* <Button className="w-full bg-orange-400 font-semibold">
-            Get Ticket
-          </Button> */}
         </div>
       </div>
     </main>

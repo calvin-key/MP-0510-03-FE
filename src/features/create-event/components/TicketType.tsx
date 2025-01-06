@@ -3,83 +3,95 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import React from "react";
 
 interface Ticket {
   ticketType: string;
-  price: string;
-  availableSeats: string;
+  price: number;
+  availableSeats: number;
 }
 
 interface TicketTypeProps {
   values: Ticket[];
-  setFieldValue: (field: string, value: any) => void;
+  setFieldValue: (field: string, value: Ticket[]) => void;
 }
 
-const TicketType: React.FC<TicketTypeProps> = ({ values, setFieldValue }) => {
+const TicketType = ({ values, setFieldValue }: TicketTypeProps) => {
   const handleAddTicket = () => {
     setFieldValue("ticketTypes", [
       ...values,
-      { ticketType: "", price: "", availableSeats: "" },
+      { ticketType: "", price: 0, availableSeats: 0 },
     ]);
   };
 
   const handleTicketChange = (
     index: number,
     field: keyof Ticket,
-    value: string
+    value: string,
   ) => {
-    const updatedTickets = [...values];
-    updatedTickets[index][field] = value;
+    const updatedTickets = values.map((ticket, i) =>
+      i === index ? { ...ticket, [field]: value } : ticket,
+    );
     setFieldValue("ticketTypes", updatedTickets);
   };
 
   const handleRemoveTicket = (index: number) => {
-    const updatedTickets = values.filter((_, i) => i !== index);
-    setFieldValue("ticketTypes", updatedTickets);
+    setFieldValue(
+      "ticketTypes",
+      values.filter((_, i) => i !== index),
+    );
   };
 
   return (
     <div className="container mx-auto mt-9 space-y-5">
       <div className="grid w-full max-w-5xl items-center gap-1.5">
-        <Label>Ticket Types</Label>
+        <Label className="text-lg font-semibold">Ticket Types</Label>
         {values.map((ticket, index) => (
-          <div key={index} className="mb-3 flex items-center gap-4">
-            <Input
-              type="text"
-              placeholder="Ticket Type"
-              value={ticket.ticketType}
-              onChange={(e) =>
-                handleTicketChange(index, "ticketType", e.target.value)
-              }
-              className="w-1/3"
-            />
-            <Input
-              type="text"
-              placeholder="Price"
-              value={ticket.price}
-              onChange={(e) =>
-                handleTicketChange(index, "price", e.target.value)
-              }
-              className="w-1/3"
-            />
-            <Input
-              type="text"
-              placeholder="Available Seats"
-              value={ticket.availableSeats}
-              onChange={(e) =>
-                handleTicketChange(index, "availableSeats", e.target.value)
-              }
-              className="w-1/3"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              className="text-red-500"
-              onClick={() => handleRemoveTicket(index)}
-            >
-              Remove
-            </Button>
+          <div key={index} className="mb-6">
+            <div className="flex gap-4">
+              <div className="w-1/3">
+                <Label>Ticket Type</Label>
+                <Input
+                  type="text"
+                  placeholder="e.g., VIP"
+                  value={ticket.ticketType}
+                  onChange={(e) =>
+                    handleTicketChange(index, "ticketType", e.target.value)
+                  }
+                />
+              </div>
+              <div className="w-1/3">
+                <Label>Price (Rp)</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 100000"
+                  value={ticket.price}
+                  onChange={(e) =>
+                    handleTicketChange(index, "price", e.target.value)
+                  }
+                />
+              </div>
+              <div className="w-1/3">
+                <Label>Available Seats</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g., 50"
+                  value={ticket.availableSeats}
+                  onChange={(e) =>
+                    handleTicketChange(index, "availableSeats", e.target.value)
+                  }
+                />
+              </div>
+              <div className="flex items-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-red-500"
+                  onClick={() => handleRemoveTicket(index)}
+                >
+                  Remove
+                </Button>
+              </div>
+            </div>
           </div>
         ))}
         <Button

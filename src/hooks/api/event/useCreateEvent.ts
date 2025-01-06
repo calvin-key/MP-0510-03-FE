@@ -1,13 +1,14 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import useAxios from "@/hooks/useAxios";
+import { getSession } from "next-auth/react";
 
 interface TicketType {
   ticketType: string;
-  price: number;  // Ensure that this is a string
-  availableSeats: number;  // Ensure that this is a string
+  price: number;
+  availableSeats: number;
 }
 
 export interface CreateEventPayload {
@@ -31,12 +32,16 @@ interface ErrorResponse {
 const useCreateEvent = () => {
   const router = useRouter();
   const { axiosInstance } = useAxios();
+  const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (payload: CreateEventPayload) => {
+  return useMutation<any, AxiosError<ErrorResponse>, CreateEventPayload>({
+    mutationFn: async (payload) => {
+      const session = await getSession();
+      const token = session?.user.token; 
+
       const formData = new FormData();
+
       formData.append("name", payload.name);
-      formData.append("category", payload.category);
       formData.append("description", payload.description);
       formData.append("address", payload.address);
       formData.append("specificLocation", payload.specificLocation);
@@ -44,30 +49,37 @@ const useCreateEvent = () => {
       formData.append("endDate", payload.endDate);
       formData.append("city", payload.city);
 
-      // Handle image if it exists
-      if (payload.image) {
-        formData.append("image", payload.image);
-      }
-
-      // Convert ticketTypes to the expected format (ensure strings for price and availableSeats)
-      const formattedTicketTypes = payload.ticketTypes.map(ticket => ({
+      const formattedTicketTypes = payload.ticketTypes.map((ticket) => ({
         ticketType: ticket.ticketType,
-        price: ticket.price, // Ensure price is string (no need to parseInt here)
-        availableSeats: ticket.availableSeats, // Ensure availableSeats is string
+        price: parseInt(ticket.price.toString()),
+        availableSeats: parseInt(ticket.availableSeats.toString()),
       }));
 
       formData.append("ticketTypes", JSON.stringify(formattedTicketTypes));
       formData.append("categories", JSON.stringify(payload.categories));
 
-      const { data } = await axiosInstance.post("/events", formData);
+      if (payload.image instanceof File) {
+        formData.append("image", payload.image, payload.image.name);
+      }
+
+      const { data } = await axiosInstance.post("/events", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       return data;
     },
     onSuccess: () => {
       toast.success("Event created successfully!");
-      router.push("/");
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+      router.push("/dashboard");
     },
-    onError: (error: AxiosError<ErrorResponse>) => {
-      toast.error(error.response?.data?.message || "Failed to create event");
+    onError: (error: AxiosError<any>) => {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Failed to create event";
+      toast.error(errorMessage);
     },
   });
 };

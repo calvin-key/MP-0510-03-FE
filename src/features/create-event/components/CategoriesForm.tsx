@@ -7,7 +7,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import React from "react";
 
 const predefinedCategories = [
   "Music",
@@ -16,14 +15,14 @@ const predefinedCategories = [
   "Holiday",
   "Business",
   "Food & Drink",
-];
+] as const;
 
 interface CategoriesFormProps {
   values: string[];
-  setFieldValue: (field: string, value: any) => void;
+  setFieldValue: (field: string, value: string[]) => void;
 }
 
-const CategoriesForm: React.FC<CategoriesFormProps> = ({ values, setFieldValue }) => {
+const CategoriesForm = ({ values, setFieldValue }: CategoriesFormProps) => {
   const handleAddCategory = () => {
     setFieldValue("categories", [...values, ""]);
   };
@@ -35,8 +34,7 @@ const CategoriesForm: React.FC<CategoriesFormProps> = ({ values, setFieldValue }
   };
 
   const handleRemoveCategory = (index: number) => {
-    const updatedCategories = values.filter((_, i) => i !== index);
-    setFieldValue("categories", updatedCategories);
+    setFieldValue("categories", values.filter((_, i) => i !== index));
   };
 
   return (
@@ -69,7 +67,12 @@ const CategoriesForm: React.FC<CategoriesFormProps> = ({ values, setFieldValue }
           </Button>
         </div>
       ))}
-      <Button type="button" variant="default" className="w-fit" onClick={handleAddCategory}>
+      <Button 
+        type="button" 
+        variant="default" 
+        className="w-fit" 
+        onClick={handleAddCategory}
+      >
         Add Category
       </Button>
     </div>
