@@ -12,6 +12,7 @@ export interface Organizer {
     pointsBalance : number,
     pointsExpiryDate: Date,
     address: string,
+    bankAccount: string,
     isDeleted : boolean,
     createdAt: Date,
     updatedAt : Date,

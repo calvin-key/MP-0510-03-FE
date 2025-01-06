@@ -13,13 +13,16 @@ import {
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import CategoriesForm from "./components/CategoriesForm";
 import TicketType from "./components/TicketType";
-import useCreateEvent from "@/hooks/api/event/useCreateEvent";
+import useCreateEvent, {
+  CreateEventPayload,
+} from "@/hooks/api/event/useCreateEvent";
 import { toast } from "react-toastify";
 import { EventData } from "@/utils/eventData";
 import { addEvent } from "@/utils/eventDataManager";
+import { createEventSchema } from "./schemas";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
@@ -29,7 +32,8 @@ const predefinedCities = ["Jakarta", "Yogyakarta", "Bali", "Bandung"];
 
 const CreateEventPage = () => {
   const { mutateAsync: createEvent, isPending } = useCreateEvent();
-  const formik = useFormik({
+
+  const formik = useFormik<CreateEventPayload>({
     initialValues: {
       name: "",
       category: "",
@@ -40,69 +44,31 @@ const CreateEventPage = () => {
       endDate: "",
       city: "",
       image: null,
-      ticketTypes: [{ ticketType: "", price: "", availableSeats: "" }],
+      ticketTypes: [{ ticketType: "", price: 0, availableSeats: 0 }],
       categories: [""],
     },
+    validationSchema: createEventSchema,
     onSubmit: async (values) => {
-      try {
-        const {
-          name,
-          category,
-          description,
-          address,
-          specificLocation,
-          startDate,
-          endDate,
-          city,
-          image,
-          ticketTypes,
-          categories,
-        } = values;
-
-        const formattedTicketTypes = ticketTypes.map((ticket) => ({
-          ticketType: ticket.ticketType,
-          price: parseFloat(ticket.price),
-          availableSeats: parseInt(ticket.availableSeats, 10),
-        }));
-
-        const payload = {
-          name,
-          category,
-          description,
-          address,
-          specificLocation,
-          startDate,
-          endDate,
-          city,
-          image,
-          ticketTypes: formattedTicketTypes,
-          categories,
-        };
-
-        console.log("Payload to API:", payload);
-
-        const response = await createEvent(payload);
-
-        // Add the new event to our local event data manager
-        const newEvent: EventData = {
-          id: response.id, // Assuming the API returns an id
-          name: values.name,
-          date: new Date(values.startDate),
-          revenue: formattedTicketTypes.reduce(
-            (total, ticket) => total + ticket.price * ticket.availableSeats,
-            0,
-          ),
-          ticketsSold: 0, // Initialize to 0
-          attendance: 0,
-          attendees: [],
-        };
-        addEvent(newEvent);
-
-        console.log("API Response:", response);
-      } catch (error) {
-        console.error("Error creating event:", error);
-      }
+      const formattedValues = {
+        ...values,
+        category: values.categories[0],
+      };
+      await createEvent(formattedValues);
     },
+  });
+
+  useEffect(() => {
+    if (formik.values.categories[0]) {
+      formik.setFieldValue("category", formik.values.categories[0]);
+    }
+  }, [formik.values.categories]);
+
+  // Add this to check if the form is actually valid
+  console.log("Form Status:", {
+    isValid: formik.isValid,
+    dirty: formik.dirty,
+    errors: formik.errors,
+    values: formik.values,
   });
 
   const [selectedImage, setSelectedImage] = useState<string>("");
@@ -195,6 +161,7 @@ const CreateEventPage = () => {
           {/* Event Image */}
           <div>
             <Label>Event Image</Label>
+            <p className="mb-2 text-sm text-gray-500">Maximum file size: 7MB</p>
             {selectedImage ? (
               <div className="space-y-3">
                 <Image

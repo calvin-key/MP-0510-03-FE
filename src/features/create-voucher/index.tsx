@@ -11,52 +11,39 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { useFormik } from "formik";
-import * as Yup from "yup";
-import { toast } from "react-toastify";
 import useCreateVoucher from "@/hooks/api/voucher/useCreateVoucher";
 import useOrganizerEvents from "@/hooks/api/event/useGetOrganizerEvents";
 import { Event } from "@/types/event";
-import { Voucher } from "@/types/voucher"; // Import the Voucher type
+import { Voucher } from "@/types/voucher";
+import { createVoucherSchema } from "./schemas";
 
 const CreateVoucherPage = () => {
   const { data: events, isLoading: eventsLoading } = useOrganizerEvents();
   const { mutateAsync: createVoucher, isPending: voucherPending } =
     useCreateVoucher();
 
-  const formik = useFormik({
+  const formik = useFormik<Omit<Voucher, "id">>({
     initialValues: {
-      eventId: "",
+      eventId: 0,
       code: "",
       description: "",
-      nominal: "",
-      quantity: "",
-      startAt: "",
-      expiresAt: "",
+      nominal: 0,
+      quantity: 0,
+      startAt: new Date(),
+      expiresAt: new Date(),
     },
-    validationSchema: Yup.object({
-      eventId: Yup.string().required("Event is required."),
-      code: Yup.string().required("Voucher code is required."),
-      description: Yup.string().required("Description is required."),
-      nominal: Yup.number()
-        .min(1, "Nominal must be at least 1.")
-        .required("Nominal is required."),
-      quantity: Yup.number()
-        .min(1, "Quantity must be at least 1.")
-        .required("Quantity is required."),
-      startAt: Yup.date().required("Start date is required."),
-      expiresAt: Yup.date()
-        .min(Yup.ref("startAt"), "Expiry date must be after the start date.")
-        .required("Expiry date is required."),
-    }),
-    onSubmit: async (values: Voucher) => {
-      // Type the values as Voucher
-      try {
-        await createVoucher(values);
-        toast.success("Voucher created successfully!");
-        formik.resetForm();
-      } catch (error) {
-        toast.error("Failed to create voucher.");
-      }
+    validationSchema: createVoucherSchema,
+    onSubmit: async (values) => {
+      const formattedValues = {
+        id: 0,
+        ...values,
+        eventId: Number(values.eventId),
+        nominal: Number(values.nominal),
+        quantity: Number(values.quantity),
+      };
+
+      await createVoucher(formattedValues);
+      formik.resetForm();
     },
   });
 
@@ -68,8 +55,10 @@ const CreateVoucherPage = () => {
         <div>
           <Label htmlFor="eventId">Select Event</Label>
           <Select
-            onValueChange={(value) => formik.setFieldValue("eventId", value)}
-            value={formik.values.eventId}
+            onValueChange={(value) =>
+              formik.setFieldValue("eventId", Number(value))
+            }
+            value={String(formik.values.eventId)}
           >
             <SelectTrigger>
               <SelectValue
@@ -81,7 +70,6 @@ const CreateVoucherPage = () => {
             <SelectContent>
               {events?.map(
                 (event: Event) =>
-                  // Add a check to ensure event.id is defined before calling toString
                   event.id !== undefined && (
                     <SelectItem key={event.id} value={event.id.toString()}>
                       {event.name}
@@ -167,12 +155,14 @@ const CreateVoucherPage = () => {
               id="startAt"
               name="startAt"
               type="datetime-local"
-              value={formik.values.startAt}
+              value={String(formik.values.startAt)}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
             {formik.touched.startAt && formik.errors.startAt && (
-              <p className="text-xs text-red-500">{formik.errors.startAt}</p>
+              <p className="text-xs text-red-500">
+                {String(formik.errors.startAt)}
+              </p>
             )}
           </div>
           <div>
@@ -181,12 +171,14 @@ const CreateVoucherPage = () => {
               id="expiresAt"
               name="expiresAt"
               type="datetime-local"
-              value={formik.values.expiresAt}
+              value={String(formik.values.expiresAt)}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
             />
             {formik.touched.expiresAt && formik.errors.expiresAt && (
-              <p className="text-xs text-red-500">{formik.errors.expiresAt}</p>
+              <p className="text-xs text-red-500">
+                {String(formik.errors.expiresAt)}
+              </p>
             )}
           </div>
         </div>

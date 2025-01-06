@@ -1,6 +1,7 @@
 import { EventCategory } from "./eventCategory";
 import { Organizer } from "./organizer";
 import { TicketType } from "./ticketTypes";
+import { Voucher } from "./transaction";
 
 export interface Event {
   id: number;
@@ -20,6 +21,8 @@ export interface Event {
   eventCategories: EventCategory[];
   ticketTypes: TicketType[];
   location: { city: string };
+  vouchers: Voucher[];
+  reviews?: any[];
   // organizer: { fullName: string };
   // eventCategories: [{ name: string }];
   // ticketTypes: [{ price: number }];

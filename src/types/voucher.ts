@@ -1,9 +1,17 @@
 export interface Voucher {
-  eventId: string;
+  id: number;
+  eventId: number;
   code: string;
   description: string;
-  nominal: string;
-  quantity: string;
-  startAt: string;
-  expiresAt: string;
+  nominal: number;
+  quantity: number;
+  startAt: Date;
+  expiresAt: Date;
+}
+
+export interface VoucherUsage {
+  id: number;
+  userId: number;
+  voucherId: number;
+  createdAt: Date;
 }
