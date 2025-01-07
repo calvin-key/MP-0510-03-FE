@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { EventStatistics } from "@/types/eventStatistic";
+import { EventData } from "@/types/event";
 import useAxios from "@/hooks/useAxios";
 
 interface GetEventStatisticsParams {
@@ -9,6 +10,18 @@ interface GetEventStatisticsParams {
   day?: string;
 }
 
+const transformToEventData = (stats: EventStatistics[]): EventData[] => {
+  return stats.map((stat, index) => ({
+    id: index + 1,
+    name: stat.eventName,
+    date: new Date(),
+    ticketsSold: stat.totalTransactions,
+    revenue: stat.totalRevenue,
+    attendance: stat.totalTransactions,
+    attendees: [],
+  }));
+};
+
 const useGetEventStatistics = ({
   year,
   month,
@@ -16,21 +29,18 @@ const useGetEventStatistics = ({
 }: GetEventStatisticsParams) => {
   const { axiosInstance } = useAxios();
 
-  return useQuery<EventStatistics[], AxiosError>({
-    queryKey: ["eventStatistics", { year, month, day }],
+  return useQuery<EventData[], AxiosError>({
+    queryKey: ["statistics", { year, month, day }],
     queryFn: async () => {
-      const params: Record<string, string> = {};
-      if (year) params.year = year;
-      if (month) params.month = month;
-      if (day) params.day = day;
-
-      const response = await axiosInstance.get<EventStatistics[]>(
-        "/api/statistic",
-        { params },
-      );
-      return response.data;
+      const response = await axiosInstance.get<{
+        success: boolean;
+        data: EventStatistics[];
+      }>("/statistic/transactions", {
+        params: { year, month, day },
+      });
+      return transformToEventData(response.data.data);
     },
-    enabled: Boolean(year || month || day),
+    enabled: Boolean(year),
   });
 };
 

@@ -1,176 +1,170 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import Image from "next/image";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import Link from "next/link";
+import LoadingScreen from "@/components/LoadingScreen";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
-import { TransactionResponse } from "@/types/transaction";
-import useRejectTransaction from "@/hooks/api/confirm-transaction/useRejectTransaction";
-import useGetTransactions from "@/hooks/api/confirm-transaction/useGetTransaction";
-import RejectTransactionDialog from "./components/RejectTransaction";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useGetUserTransactions } from "@/hooks/api/update-transaction-status/useGetUserTransaction";
+import { useUpdateTransactionStatus } from "@/hooks/api/update-transaction-status/useUpdateTransactionStatus";
+import { Transaction } from "@/types/transaction";
+import Image from "next/image";
+import { useState } from "react";
+import TransactionsTable from "./components/TransactionTable";
 
-const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "pending":
-      return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
-    case "approved":
-      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-    case "rejected":
-      return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-    default:
-      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-  }
-};
+const TransactionsPage = () => {
+  const { data: transactions, isLoading, isError } = useGetUserTransactions();
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-  }).format(amount);
-};
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<Transaction | null>(null);
+  const [notes, setNotes] = useState("");
 
-const TablePayments = () => {
-  const [page, setPage] = useState(1);
-  const [data, setData] = useState<TransactionResponse | null>(null);
+  const {
+    mutate: updateTransactionStatus,
+    isPending: isUpdating,
+    error: updateError,
+  } = useUpdateTransactionStatus();
 
-  const { data: fetchedData, refetch } = useGetTransactions({
-    page,
-    search: "",
-  });
-  const { mutateAsync: rejectTransaction, isPending: isRejecting } =
-    useRejectTransaction();
+  if (isLoading) return <LoadingScreen />;
+  if (isError) return <div>Error loading transactions</div>;
 
-  useEffect(() => {
-    if (fetchedData) {
-      setData(fetchedData);
-    }
-  }, [fetchedData]);
+  const transactionsArray = Array.isArray(transactions) ? transactions : [];
 
-  const handleReject = async (id: string) => {
-    await rejectTransaction(id);
-    refetch();
+  const filterTransactionsByStatus = (
+    status: Transaction["status"][],
+  ): Transaction[] => {
+    return transactionsArray.filter((transaction: Transaction) =>
+      status.includes(transaction.status),
+    );
   };
 
-  if (!data) {
-    return <p>Loading...</p>;
-  }
+  const handleAccept = async (transaction: Transaction): Promise<void> => {
+    try {
+      updateTransactionStatus({
+        transactionId: transaction.id,
+        status: "done",
+        notes,
+      });
+    } catch (error) {
+      console.error("Error accepting transaction:", error);
+    }
+  };
+
+  const handleReject = async (transaction: Transaction): Promise<void> => {
+    try {
+      updateTransactionStatus({
+        transactionId: transaction.id,
+        status: "rejected",
+        notes,
+      });
+    } catch (error) {
+      console.error("Error rejecting transaction:", error);
+    }
+  };
+
+  const getTabTransactions = (tabValue: string): Transaction[] => {
+    switch (tabValue) {
+      case "pending":
+        return filterTransactionsByStatus([
+          "waiting_for_payment",
+          "waiting_for_admin_confirmation",
+        ]);
+      case "approved":
+        return filterTransactionsByStatus(["done"]);
+      case "rejected":
+        return filterTransactionsByStatus(["rejected", "expired", "canceled"]);
+      default:
+        return [];
+    }
+  };
 
   return (
-    <div className="rounded-lg border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-muted/50">
-            <TableHead className="w-[80px]">No</TableHead>
-            <TableHead>Payment Details</TableHead>
-            <TableHead>Event Info</TableHead>
-            <TableHead>Customer</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="w-[140px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.data.map((payment, index) => (
-            <TableRow key={payment.id} className="hover:bg-muted/50">
-              <TableCell className="font-medium">
-                {index + 1 + data.meta.take * (page - 1)}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-start space-x-4">
-                  {payment.paymentProof && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="relative h-16 w-16 overflow-hidden rounded-md">
-                            <Image
-                              src={payment.paymentProof}
-                              alt="Payment proof"
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            asChild
-                            className="space-x-2"
-                          >
-                            <Link href={payment.paymentProof} target="_blank">
-                              <Eye className="h-4 w-4" />
-                              <span>View full image</span>
-                            </Link>
-                          </Button>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      {formatCurrency(payment.amount)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(payment.date), "PPP")}
-                    </p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <p className="font-medium">{payment.eventName}</p>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center space-x-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
-                      {payment.customerName?.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      {payment.customerName}
-                    </p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge className={`${getStatusColor(payment.status)}`}>
-                  {payment.status}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <RejectTransactionDialog
-                    onReject={() => handleReject(payment.id)}
-                    isPending={isRejecting}
-                  />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className="container mx-auto py-10">
+      <h1 className="mb-5 text-3xl font-bold">Transaction Management</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Transactions</CardTitle>
+          <CardDescription>
+            Manage incoming payment transactions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="pending">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="pending">Pending</TabsTrigger>
+              <TabsTrigger value="approved">Approved</TabsTrigger>
+              <TabsTrigger value="rejected">Failed</TabsTrigger>
+            </TabsList>
+            {["pending", "approved", "rejected"].map((tabValue) => (
+              <TabsContent key={tabValue} value={tabValue}>
+                <TransactionsTable
+                  transactions={getTabTransactions(tabValue)}
+                  onAccept={handleAccept}
+                  onReject={handleReject}
+                  setSelectedTransaction={setSelectedTransaction}
+                  notes={notes}
+                  setNotes={setNotes}
+                  isUpdating={isUpdating}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {selectedTransaction && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="hidden">Open</Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Payment Proof</DialogTitle>
+              <DialogDescription>
+                Transaction ID: {selectedTransaction.id}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedTransaction.paymentProof && (
+              <div className="mt-4">
+                <Image
+                  src={selectedTransaction.paymentProof}
+                  alt="Payment Proof"
+                  width={400}
+                  height={300}
+                  className="rounded-md"
+                />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {updateError && (
+        <div
+          className="fixed bottom-4 right-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700"
+          role="alert"
+        >
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline">
+            Failed to update transaction status.
+          </span>
+        </div>
+      )}
     </div>
   );
 };
 
-export default TablePayments;
+export default TransactionsPage;

@@ -125,8 +125,8 @@ const RegisterPage = () => {
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="organizer">Event Organizer</SelectItem>
-                    <SelectItem value="customer">Customer</SelectItem>
+                    <SelectItem value="ORGANIZER">Event Organizer</SelectItem>
+                    <SelectItem value="CUSTOMER">Customer</SelectItem>
                   </SelectContent>
                 </Select>
                 {!!formik.touched.role && !!formik.errors.role ? (
@@ -178,7 +178,7 @@ const RegisterPage = () => {
                 ) : null}
               </div>
 
-              {formik.values.role === "customer" && (
+              {formik.values.role === "CUSTOMER" && (
                 <div>
                   <Label
                     htmlFor="referralCode"

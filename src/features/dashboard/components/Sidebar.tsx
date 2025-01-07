@@ -31,7 +31,6 @@ const Sidebar: React.FC = () => {
   const { data: session } = useSession();
   const token = session?.user?.token;
 
-  // Get real-time user data
   const { data: userData, refetch: refetchUser } = useGetUser({
     token,
   });
@@ -44,6 +43,7 @@ const Sidebar: React.FC = () => {
       "/dashboard/create-voucher",
       "/dashboard/confirmation",
       "/dashboard/attended-list",
+      "/dashboard/edit-event",
     ];
 
     if (eventRelatedPaths.some((path) => pathname?.startsWith(path))) {
@@ -64,7 +64,6 @@ const Sidebar: React.FC = () => {
 
   return (
     <div>
-      {/* Mobile Header */}
       <div className="fixed left-0 top-0 z-50 flex w-full items-center justify-between bg-white p-4 shadow-md md:hidden">
         <Button
           variant="ghost"
@@ -79,104 +78,107 @@ const Sidebar: React.FC = () => {
         <h1 className="text-lg font-bold">Dashboard</h1>
       </div>
 
-      {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-40 transform bg-white shadow-lg transition-transform duration-300 md:static md:w-64 md:transform-none ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-screen flex-col">
-          {/* Header */}
           <div className="flex h-20 items-center px-6">
             <h2 className="text-xl font-bold text-gray-900">
               Scaena's Dashboard
             </h2>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 space-y-2 overflow-y-auto p-4">
-            {/* Dashboard */}
-            <Link
-              href="/dashboard"
-              className={`flex items-center space-x-2 rounded-lg p-2 ${
-                pathname === "/dashboard"
-                  ? "bg-orange-50 text-orange-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              <Calendar className="h-5 w-5" />
-              <span>Dashboard</span>
-            </Link>
-
-            {/* Events Section */}
-            <div>
-              <Button
-                variant="ghost"
-                className="w-full justify-between hover:bg-gray-50"
-                onClick={() => setIsEventMenuOpen(!isEventMenuOpen)}
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  <span>Events</span>
-                </div>
-                <ChevronDown
-                  className={`h-4 w-4 transform transition-transform duration-200 ${
-                    isEventMenuOpen ? "rotate-180" : ""
+            {userData && userData.role === "ORGANIZER" && (
+              <>
+                <Link
+                  href="/dashboard"
+                  className={`flex items-center space-x-2 rounded-lg p-2 ${
+                    pathname === "/dashboard"
+                      ? "bg-orange-50 text-orange-700"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   }`}
-                />
-              </Button>
-              {isEventMenuOpen && (
-                <div className="ml-4 mt-2 space-y-1">
-                  {[
-                    {
-                      href: "/dashboard/event-list",
-                      icon: Calendar,
-                      label: "Event List",
-                    },
-                    {
-                      href: "/dashboard/create-event",
-                      icon: Plus,
-                      label: "Create Event",
-                    },
-                    {
-                      href: "/dashboard/event-categories",
-                      icon: Tag,
-                      label: "Event Category",
-                    },
-                    {
-                      href: "/dashboard/create-voucher",
-                      icon: Ticket,
-                      label: "Voucher",
-                    },
-                    {
-                      href: "/dashboard/confirmation",
-                      icon: Receipt,
-                      label: "Confirmation",
-                    },
-                    {
-                      href: "/dashboard/attended-list",
-                      icon: List,
-                      label: "Attended List",
-                    },
-                  ].map(({ href, icon: Icon, label }) => (
-                    <Link
-                      key={href}
-                      href={href}
-                      className={`flex items-center space-x-2 rounded-lg p-2 text-sm ${
-                        pathname === href
-                          ? "bg-orange-50 text-orange-700"
-                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{label}</span>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                >
+                  <Calendar className="h-5 w-5" />
+                  <span>Dashboard</span>
+                </Link>
 
-            {/* Settings */}
+                <div>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-between hover:bg-gray-50"
+                    onClick={() => setIsEventMenuOpen(!isEventMenuOpen)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      <span>Events</span>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 transform transition-transform duration-200 ${
+                        isEventMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </Button>
+                  {isEventMenuOpen && (
+                    <div className="ml-4 mt-2 space-y-1">
+                      {[
+                        {
+                          href: "/dashboard/event-list",
+                          icon: Calendar,
+                          label: "Event List",
+                        },
+                        {
+                          href: "/dashboard/create-event",
+                          icon: Plus,
+                          label: "Create Event",
+                        },
+                        {
+                          href: "/dashboard/event-categories",
+                          icon: Tag,
+                          label: "Event Category",
+                        },
+                        {
+                          href: "/dashboard/create-voucher",
+                          icon: Ticket,
+                          label: "Voucher",
+                        },
+                        {
+                          href: "/dashboard/confirmation",
+                          icon: Receipt,
+                          label: "Confirmation",
+                        },
+                        {
+                          href: "/dashboard/attended-list",
+                          icon: List,
+                          label: "Attended List",
+                        },
+                        {
+                          href: "/dashboard/edit-event",
+                          icon: List,
+                          label: "Edit Event",
+                        },
+                      ].map(({ href, icon: Icon, label }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          className={`flex items-center space-x-2 rounded-lg p-2 text-sm ${
+                            pathname === href
+                              ? "bg-orange-50 text-orange-700"
+                              : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                          }`}
+                        >
+                          <Icon className="h-4 w-4" />
+                          <span>{label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
             <Link
               href="/dashboard/setting"
               className={`flex items-center space-x-2 rounded-lg p-2 ${
@@ -189,7 +191,6 @@ const Sidebar: React.FC = () => {
               <span>Settings</span>
             </Link>
 
-            {/* Profile */}
             <Link
               href="/dashboard/profile"
               className={`flex items-center space-x-2 rounded-lg p-2 ${
@@ -203,7 +204,6 @@ const Sidebar: React.FC = () => {
             </Link>
           </nav>
 
-          {/* Profile Footer */}
           {userData && (
             <div className="border-t p-4">
               <div className="mb-4 flex items-center justify-between">
@@ -243,7 +243,6 @@ const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Overlay for Mobile */}
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black opacity-50 md:hidden"

@@ -1,4 +1,3 @@
-// types/event-category.ts
 export interface Category {
   id: number;
   name: string;

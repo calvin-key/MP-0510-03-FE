@@ -109,7 +109,6 @@ const ProfilePage = () => {
           </CardHeader>
           <CardContent className="p-6">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              {/* Left Column - Profile Picture */}
               <div className="flex flex-col items-center space-y-4">
                 <div
                   className="group relative cursor-pointer"
@@ -145,7 +144,6 @@ const ProfilePage = () => {
                 </p>
               </div>
 
-              {/* Middle Column - Profile Information */}
               <form
                 onSubmit={formik.handleSubmit}
                 className="space-y-4 lg:col-span-2"
@@ -225,9 +223,7 @@ const ProfilePage = () => {
           </CardContent>
         </Card>
 
-        {/* Rewards Section */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          {/* Points Card */}
           <Card>
             <CardHeader className="border-b pb-6">
               <CardTitle className="flex items-center gap-2">
@@ -257,7 +253,6 @@ const ProfilePage = () => {
             </CardContent>
           </Card>
 
-          {/* Coupons Card */}
           <Card>
             <CardHeader className="border-b pb-6">
               <CardTitle className="flex items-center gap-2">

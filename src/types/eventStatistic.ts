@@ -1,7 +1,7 @@
 export interface EventStatistics {
   eventId: number;
   eventName: string;
-  startDate: Date;
+  startDate: string;
   ticketType: string;
   totalTransactions: number;
   totalRevenue: number;

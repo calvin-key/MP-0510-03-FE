@@ -1,143 +1,154 @@
-"use client";
-
+import { useFormik } from "formik";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCreateTransaction } from "@/hooks/api/transaction/useCreateTransaction";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import { TransactionModalProps } from "@/types/transaction";
+import { createTransactionSchema } from "../schemas";
 
-export function TransactionModal() {
-  // Example ticket data (could be fetched dynamically from an API)
-  const ticketOptions = [
-    { id: "standard", name: "Standard", price: 100, availableSeats: 50 },
-    { id: "vip", name: "VIP", price: 200, availableSeats: 20 },
-  ];
+export function TransactionModal({
+  eventName,
+  location,
+  dateTime,
+  ticketTypes,
+  userPoints = 0,
+  availableVouchers = [],
+}: TransactionModalProps) {
+  const session = useSession();
+  const router = useRouter();
+  const { mutateAsync: createTransaction } = useCreateTransaction();
+  const [isOpen, setIsOpen] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
 
-  // State for managing ticket quantities and voucher code
-  const [ticketQuantities, setTicketQuantities] = useState(
-    ticketOptions.reduce(
-      (acc, ticket) => {
-        acc[ticket.id] = 0;
-        return acc;
-      },
-      {} as Record<string, number>,
-    ),
-  );
-  const [voucherCode, setVoucherCode] = useState("");
+  const formik = useFormik({
+    initialValues: {
+      tickets: ticketTypes.map((ticket) => ({
+        ticketTypeId: ticket.id,
+        quantity: 0,
+      })),
+      pointsUsed: 0,
+      voucherId: "",
+    },
+    validationSchema: createTransactionSchema(userPoints),
+    onSubmit: async (values) => {
+      const ticketsToSubmit = values.tickets.filter((t) => t.quantity > 0);
 
-  // Total price calculation
-  const calculateTotal = () => {
-    return ticketOptions.reduce(
-      (total, ticket) =>
-        total + ticket.price * (ticketQuantities[ticket.id] || 0),
-      0,
+      if (ticketsToSubmit.length === 0) {
+        return toast.error("Please select at least one ticket");
+      }
+
+      const response = await createTransaction({
+        tickets: ticketsToSubmit,
+        pointsUsed: values.pointsUsed,
+        voucherId: values.voucherId ? Number(values.voucherId) : undefined,
+        couponCode: couponCode || undefined,
+      });
+
+      setIsOpen(false);
+      router.push(`/transactions/${response.id}`);
+    },
+  });
+
+  const calculateTotal = (): number => {
+    const ticketsTotal = formik.values.tickets.reduce((total, ticket) => {
+      const ticketType = ticketTypes.find((t) => t.id === ticket.ticketTypeId);
+      return total + (ticketType?.price || 0) * ticket.quantity;
+    }, 0);
+
+    const selectedVoucher = availableVouchers.find(
+      (v) => v.id === Number(formik.values.voucherId),
     );
-  };
 
-  // Function to handle increment/decrement of ticket quantities
-  const updateTicketQuantity = (id: string, change: number) => {
-    setTicketQuantities((prev) => {
-      const newQuantity = Math.max(0, (prev[id] || 0) + change);
-      return { ...prev, [id]: newQuantity };
-    });
-  };
+    const voucherDiscount = selectedVoucher?.nominal || 0;
+    const pointsDiscount = formik.values.pointsUsed || 0;
 
-  // Function to handle purchase
-  const handlePurchase = () => {
-    const selectedTickets = ticketOptions
-      .filter((ticket) => ticketQuantities[ticket.id] > 0)
-      .map((ticket) => ({
-        name: ticket.name,
-        quantity: ticketQuantities[ticket.id],
-        price: ticket.price,
-      }));
-
-    alert(
-      `Purchased Tickets:\n${selectedTickets
-        .map(
-          (ticket) =>
-            `${ticket.name}: ${ticket.quantity} x $${ticket.price} = $${
-              ticket.quantity * ticket.price
-            }`,
-        )
-        .join(
-          "\n",
-        )}\nVoucher Code: ${voucherCode}\nTotal: $${calculateTotal()}`,
-    );
-
-    // Clear form after transaction
-    setTicketQuantities(
-      ticketOptions.reduce(
-        (acc, ticket) => {
-          acc[ticket.id] = 0;
-          return acc;
-        },
-        {} as Record<string, number>,
-      ),
-    );
-    setVoucherCode("");
+    return Math.max(0, ticketsTotal - voucherDiscount - pointsDiscount);
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full bg-orange-400 font-semibold">
-          Get Ticket
+        <Button className="w-full bg-orange-400 font-semibold hover:bg-orange-500">
+          Get Tickets
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px]">
-        <DialogHeader className="bg-blue-50 p-9">
-          <DialogTitle>
-            Getting Paid To Talk or whatever the heck is the title
-          </DialogTitle>
+        <DialogHeader>
+          <DialogTitle>{eventName}</DialogTitle>
           <DialogDescription>
-            <p>
-              Jl, AntaBranta, <span>Bali</span>
-            </p>
-            <p>Sat 28th December 2024 3:00 pm</p>
+            <p>{location}</p>
+            <p>{dateTime}</p>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-6 sm:flex-row">
-          {/* Left: Ticket Selection */}
-          <div className="flex-1 space-y-4">
-            <h2 className="text-lg font-bold">Select Tickets</h2>
-            {ticketOptions.map((ticket) => (
+        <form onSubmit={formik.handleSubmit} className="space-y-6">
+          {/* Ticket Selection */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold">Select Tickets</h2>
+            {ticketTypes.map((ticket, index) => (
               <div
                 key={ticket.id}
-                className="flex items-center justify-between rounded border p-4"
+                className="flex items-center justify-between rounded bg-gray-50 p-2"
               >
                 <div>
-                  <h3 className="text-md font-semibold">{ticket.name}</h3>
+                  <p className="font-medium">{ticket.ticketType}</p>
                   <p className="text-sm text-gray-600">
-                    ${ticket.price} | {ticket.availableSeats} seats available
+                    {new Intl.NumberFormat("id-ID", {
+                      style: "currency",
+                      currency: "IDR",
+                    }).format(ticket.price)}
                   </p>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-3">
                   <Button
+                    type="button"
                     size="sm"
-                    onClick={() => updateTicketQuantity(ticket.id, -1)}
-                    disabled={ticketQuantities[ticket.id] <= 0}
+                    variant="outline"
+                    onClick={() => {
+                      const updatedTickets = [...formik.values.tickets];
+                      updatedTickets[index].quantity = Math.max(
+                        0,
+                        updatedTickets[index].quantity - 1,
+                      );
+                      formik.setFieldValue("tickets", updatedTickets);
+                    }}
                   >
                     -
                   </Button>
-                  <span className="text-md font-semibold">
-                    {ticketQuantities[ticket.id] || 0}
+                  <span className="w-8 text-center">
+                    {formik.values.tickets[index].quantity}
                   </span>
                   <Button
+                    type="button"
                     size="sm"
-                    onClick={() => updateTicketQuantity(ticket.id, 1)}
-                    disabled={
-                      ticketQuantities[ticket.id] >= ticket.availableSeats
-                    }
+                    variant="outline"
+                    onClick={() => {
+                      const updatedTickets = [...formik.values.tickets];
+                      updatedTickets[index].quantity = Math.min(
+                        ticket.availableSeats,
+                        updatedTickets[index].quantity + 1,
+                      );
+                      formik.setFieldValue("tickets", updatedTickets);
+                    }}
                   >
                     +
                   </Button>
@@ -145,52 +156,112 @@ export function TransactionModal() {
               </div>
             ))}
           </div>
-          <div className="mx-4 h-full border-l border-gray-300"></div>
 
-          {/* Right: Transaction Summary */}
-          <div className="flex-1 space-y-4">
-            <h2 className="text-lg font-bold">Summary</h2>
-            <div className="space-y-2">
-              {ticketOptions.map(
-                (ticket) =>
-                  ticketQuantities[ticket.id] > 0 && (
-                    <div
-                      key={ticket.id}
-                      className="flex items-center justify-between"
-                    >
-                      <span>
-                        {ticket.name} x {ticketQuantities[ticket.id]}
-                      </span>
-                      <span>${ticket.price * ticketQuantities[ticket.id]}</span>
-                    </div>
-                  ),
-              )}
+          {session.status === "authenticated" ? (
+            <>
+              {/* Voucher Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="voucherId">Available Vouchers</Label>
+                <Select
+                  value={
+                    formik.values.voucherId === ""
+                      ? "no-voucher"
+                      : formik.values.voucherId
+                  }
+                  onValueChange={(value) =>
+                    formik.setFieldValue(
+                      "voucherId",
+                      value === "no-voucher" ? "" : value,
+                    )
+                  }
+                >
+                  {" "}
+                  <SelectTrigger>
+                    {" "}
+                    <SelectValue placeholder="Select a voucher" />{" "}
+                  </SelectTrigger>{" "}
+                  <SelectContent>
+                    {" "}
+                    <SelectItem value="no-voucher">No voucher</SelectItem>{" "}
+                    {availableVouchers.map((voucher) => (
+                      <SelectItem
+                        key={voucher.id}
+                        value={voucher.id.toString()}
+                        disabled={voucher.usageCount >= voucher.quantity}
+                      >
+                        {" "}
+                        {voucher.description} ({" "}
+                        {new Intl.NumberFormat("id-ID", {
+                          style: "currency",
+                          currency: "IDR",
+                        }).format(voucher.nominal)}{" "}
+                        off){" "}
+                      </SelectItem>
+                    ))}{" "}
+                  </SelectContent>{" "}
+                </Select>
+              </div>
+
+              {/* Coupon Input */}
+              <div className="space-y-2">
+                <Label htmlFor="couponCode">Coupon Code</Label>
+                <Input
+                  id="couponCode"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter coupon code"
+                />
+              </div>
+
+              {/* Points Input */}
+              <div className="space-y-2">
+                <Label htmlFor="pointsUsed">
+                  Use Points (Available: {userPoints})
+                </Label>
+                <Input
+                  id="pointsUsed"
+                  type="number"
+                  {...formik.getFieldProps("pointsUsed")}
+                  max={userPoints}
+                  min={0}
+                  className="w-full"
+                />
+                {formik.touched.pointsUsed && formik.errors.pointsUsed && (
+                  <p className="text-sm text-red-500">
+                    {formik.errors.pointsUsed}
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="rounded-lg bg-orange-50 p-4">
+              <p className="text-sm text-gray-600">
+                Sign in to use vouchers, coupons, and points for additional
+                discounts!
+              </p>
             </div>
-            <div className="mt-4 border-t pt-4">
-              <Label htmlFor="voucher">Voucher Code</Label>
-              <Input
-                id="voucher"
-                type="text"
-                value={voucherCode}
-                onChange={(e) => setVoucherCode(e.target.value)}
-                placeholder="Enter voucher code (optional)"
-                className="mt-1"
-              />
-            </div>
-            <div className="flex items-center justify-between text-lg font-bold">
-              <span>Total</span>
-              <span>${calculateTotal()}</span>
+          )}
+
+          {/* Total Price */}
+          <div className="space-y-2 border-t pt-4">
+            <div className="flex justify-between font-semibold">
+              <span>Total Price:</span>
+              <span>
+                {new Intl.NumberFormat("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                }).format(calculateTotal())}
+              </span>
             </div>
             <Button
-              onClick={handlePurchase}
-              disabled={calculateTotal() === 0}
-              className="w-full bg-orange-500"
+              type="submit"
+              className="w-full bg-orange-400 hover:bg-orange-500"
+              disabled={calculateTotal() <= 0 || formik.isSubmitting}
             >
-              Confirm Purchase
+              {formik.isSubmitting ? "Processing..." : "Confirm Purchase"}
             </Button>
           </div>
-        </div>
-        <DialogFooter />
+        </form>
       </DialogContent>
     </Dialog>
   );

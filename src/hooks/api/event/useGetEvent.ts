@@ -7,6 +7,7 @@ const useGetEvent = (id: number) => {
     queryKey: ["event", id],
     queryFn: async () => {
       const { data } = await axiosInstance.get<Event>(`/events/${id}`);
+      console.log('API Response:', data);
       return data;
     },
   });

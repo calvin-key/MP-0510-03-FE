@@ -1,4 +1,3 @@
-// src/api/useAttendeeList.ts
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -57,8 +56,8 @@ const useAttendeeList = (params: AttendeeListParams) => {
     queryKey: ["attendeeList", params],
     queryFn: () => fetchAttendeeList(params),
     retry: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
     throwOnError: false,
   });

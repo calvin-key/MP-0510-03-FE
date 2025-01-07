@@ -1,23 +1,13 @@
 import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  Pie,
-  PieChart,
-  Cell,
-} from "recharts";
-import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EventData } from "@/utils/eventData";
+import { EventData } from "@/types/event";
+import { PieChart } from "lucide-react";
+import { Cell, Legend, Pie, ResponsiveContainer, Tooltip } from "recharts";
 
 const COLORS = [
   "#0088FE",
@@ -44,11 +34,6 @@ export function MonthlyView({ data }: { data: EventData[] }) {
     value: event.revenue,
   }));
 
-  const ticketData = data.map((event) => ({
-    name: event.name,
-    value: event.ticketsSold,
-  }));
-
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
@@ -62,30 +47,7 @@ export function MonthlyView({ data }: { data: EventData[] }) {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Tickets Sold
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalTicketsSold.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Attendance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalAttendance.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Similar cards for Tickets Sold and Attendance */}
       </div>
       <Card>
         <CardHeader>
@@ -117,25 +79,6 @@ export function MonthlyView({ data }: { data: EventData[] }) {
               <Tooltip />
               <Legend />
             </PieChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Ticket Sales Comparison</CardTitle>
-          <CardDescription>
-            Number of tickets sold for each event
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={data}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="ticketsSold" fill="#8884d8" />
-            </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

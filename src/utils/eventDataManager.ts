@@ -8,8 +8,8 @@ export const processStatisticsData = (data: EventStatistics[]): EventData[] => {
     date: new Date(stat.startDate),
     ticketsSold: stat.totalTransactions,
     revenue: stat.totalRevenue,
-    attendance: stat.totalTransactions,
-    attendees: [], // Menggunakan array kosong karena EventData mengharapkan Attendee[]
+    attendance: stat.totalTransactions, // Assuming attendance equals transactions
+    attendees: [], // Empty array as per interface requirement
   }));
 };
 
@@ -23,7 +23,7 @@ export const aggregateDataByMonth = (data: EventData[]) => {
     }));
 
   data.forEach((event) => {
-    const month = event.date.getMonth();
+    const month = new Date(event.date).getMonth();
     monthlyData[month].ticketsSold += event.ticketsSold;
     monthlyData[month].revenue += event.revenue;
     monthlyData[month].attendance += event.attendance;

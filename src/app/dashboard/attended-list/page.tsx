@@ -1,3 +1,5 @@
+"use client";
+
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -8,7 +10,9 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
-import AttendeeList from "@/features/dashboard/attendee-list";
+import AttendeeListPage from "@/features/dashboard/attendee-list";
+import OrganizerAuthGuard from "@/hoc/AuthGuardOrganizer";
+// import AttendeeList from "@/features/dashboard/attendee-list";
 
 const AttendedList = () => {
   return (
@@ -30,9 +34,9 @@ const AttendedList = () => {
           </Breadcrumb>
         </div>
       </header>
-      <AttendeeList />
+      <AttendeeListPage />
     </>
   );
 };
 
-export default AttendedList;
+export default OrganizerAuthGuard(AttendedList);

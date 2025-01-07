@@ -1,8 +1,13 @@
+import { Attendee } from "./attendee";
 import { EventCategory } from "./eventCategory";
 import { Organizer } from "./organizer";
 import { TicketType } from "./ticketTypes";
+import { Voucher } from "./transaction";
 
 export interface Event {
+  city: string;
+  bankAccount: string;
+  categories: number[];
   id: number;
   name: string;
   image: string;
@@ -20,6 +25,8 @@ export interface Event {
   eventCategories: EventCategory[];
   ticketTypes: TicketType[];
   location: { city: string };
+  vouchers: Voucher[];
+  reviews?: any[];
   // organizer: { fullName: string };
   // eventCategories: [{ name: string }];
   // ticketTypes: [{ price: number }];
@@ -33,5 +40,5 @@ export interface EventData {
   ticketsSold: number;
   revenue: number;
   attendance: number;
-  // attendees: Attendee[];
+  attendees: Attendee[];
 }

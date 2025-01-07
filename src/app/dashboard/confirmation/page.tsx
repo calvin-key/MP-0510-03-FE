@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,6 +10,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import TablePayments from "@/features/dashboard/confirmation";
+import OrganizerAuthGuard from "@/hoc/AuthGuardOrganizer";
 import Link from "next/link";
 
 const Transaction = () => {
@@ -35,4 +38,4 @@ const Transaction = () => {
   );
 };
 
-export default Transaction;
+export default OrganizerAuthGuard(Transaction);

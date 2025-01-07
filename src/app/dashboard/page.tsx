@@ -20,10 +20,6 @@ const SidebarDashboard = () => {
               <BreadcrumbItem className="hidden md:block">
                 <Link href="/dashboard">Dashboard</Link>
               </BreadcrumbItem>
-              {/* <BreadcrumbSeparator className="hidden md:block" /> */}
-              {/* <BreadcrumbItem>
-                <BreadcrumbPage>Attended List</BreadcrumbPage>
-              </BreadcrumbItem> */}
             </BreadcrumbList>
           </Breadcrumb>
         </div>

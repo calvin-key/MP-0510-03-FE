@@ -30,7 +30,6 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({ token }) => {
   return (
     <main className="flex min-h-screen w-full items-center justify-center p-4">
       <Card className="flex w-full max-w-6xl overflow-hidden rounded-xl border-none shadow-2xl">
-        {/* Left side - Image with overlay text */}
         <div className="relative hidden w-1/2 md:block">
           <div className="absolute inset-0 bg-gradient-to-br from-orange-400 to-orange-500">
             <img
@@ -49,7 +48,6 @@ const ResetPasswordPage: FC<ResetPasswordPageProps> = ({ token }) => {
           </div>
         </div>
 
-        {/* Right side - Reset Password form */}
         <div className="w-full bg-white p-8 md:w-1/2">
           <div className="mb-8">
             <h1 className="text-center font-serif text-3xl font-bold text-gray-900">

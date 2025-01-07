@@ -24,12 +24,11 @@ export default function SettingsPage() {
     initialValues: {
       password: "",
       newPassword: "",
-      confirmPassword: "", // Changed to match schema
+      confirmPassword: "",
     },
     validationSchema: ChangePasswordSchema,
     onSubmit: async (values, actions) => {
       try {
-        // Only send required fields to API
         const payload = {
           password: values.password,
           newPassword: values.newPassword,
@@ -62,7 +61,6 @@ export default function SettingsPage() {
             className="space-y-6 sm:space-y-8"
           >
             <div className="space-y-4 sm:space-y-6">
-              {/* Current Password */}
               <div className="w-full py-4">
                 <Label htmlFor="password">Current Password</Label>
                 <div className="relative">
@@ -97,7 +95,6 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* New Password */}
               <div className="w-full py-4">
                 <Label htmlFor="newPassword">New Password</Label>
                 <div className="relative">
@@ -132,7 +129,6 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* Confirm New Password */}
               <div className="w-full py-4">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <div className="relative">
@@ -169,7 +165,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="pt-4">
               <Button
                 type="submit"

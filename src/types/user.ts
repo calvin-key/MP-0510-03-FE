@@ -1,3 +1,6 @@
+import { Transaction } from "./transaction";
+import { VoucherUsage } from "./voucher";
+
 export interface User {
   id: number;
   fullName: string;
@@ -13,4 +16,6 @@ export interface User {
   isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+  voucherUsage: VoucherUsage[];
+  transactions: Transaction[];
 }

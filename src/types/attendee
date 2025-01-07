@@ -1,6 +1,0 @@
-export interface Attendee {
-  id: number;
-  name: string;
-  ticketQuantity: number;
-  totalPaid: number;
-}
