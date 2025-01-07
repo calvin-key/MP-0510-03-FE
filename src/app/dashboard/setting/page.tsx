@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import SettingPage from "@/features/dashboard/setting";
+import AuthGuardAll from "@/hoc/AuthGuardAll";
 
-const Profile = () => {
+const Setting = () => {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2">
@@ -35,4 +36,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default AuthGuardAll(Setting);
