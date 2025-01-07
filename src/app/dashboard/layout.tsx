@@ -10,10 +10,6 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session) return redirect("/");
-  if (session.user.role !== "ORGANIZER") {
-    return redirect("/");
-  }
 
   return (
     <SidebarProvider>
