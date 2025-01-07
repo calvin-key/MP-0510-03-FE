@@ -54,8 +54,8 @@ const useCreateEvent = () => {
 
       const formattedTicketTypes = payload.ticketTypes.map((ticket) => ({
         ticketType: ticket.ticketType,
-        price: ticket.price,
-        availableSeats: parseInt(ticket.availableSeats.toLocaleString()),
+        price: Number(ticket.price),
+        availableSeats: Number(ticket.availableSeats),
       }));
 
       formData.append("ticketTypes", JSON.stringify(formattedTicketTypes));
@@ -82,8 +82,8 @@ const useCreateEvent = () => {
         error.response?.data?.message ||
         error.response?.data ||
         "Failed to create event";
-        console.log(errorMessage);
-        
+      console.log(errorMessage);
+
       toast.error(errorMessage);
     },
   });
