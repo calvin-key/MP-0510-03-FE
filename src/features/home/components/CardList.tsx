@@ -34,7 +34,7 @@ const CardList: FC = () => {
   };
 
   return (
-    <section className="container mx-auto mt-10 space-y-7 px-5">
+    <section className="container mx-auto mt-10 space-y-7 px-5 pb-5">
       <div className="mt-10 flex w-full items-center rounded-lg border border-gray-300 bg-white p-2 shadow-lg">
         <div className="relative">
           <select
