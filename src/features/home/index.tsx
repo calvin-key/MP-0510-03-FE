@@ -1,3 +1,4 @@
+import Footer from "@/components/Footer";
 import CardList from "./components/CardList";
 import Categories from "./components/Categories";
 import HeroSection from "./components/HeroSection";

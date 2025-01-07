@@ -7,6 +7,7 @@ import { useCreateReview } from "@/hooks/api/review/useCreateReview";
 import { Event } from "@/types/event";
 import { toast } from "react-toastify";
 import EventListSkeleton from "./components/ReviewSkeleton";
+import Footer from "@/components/Footer";
 
 const WriteReviewPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);

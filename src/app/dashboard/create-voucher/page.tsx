@@ -33,7 +33,7 @@ const createVoucher = () => {
           </Breadcrumb>
         </div>
       </header>
-      <CreateVoucherPage />;
+      <CreateVoucherPage />
     </>
   );
 };

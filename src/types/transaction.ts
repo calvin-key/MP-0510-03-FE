@@ -1,17 +1,6 @@
-// types/transaction.ts
-// export interface Transaction {
-//   id: string;
-//   eventName: string;
-//   customerName: string;
-//   amount: number;
-//   paymentProof: string;
-//   status: "pending" | "approved" | "rejected";
-//   date: string;
-// }
-
 import { Coupon } from "./coupon";
 import { TicketType } from "./ticketTypes";
-
+import { User } from "./user";
 
 export interface Voucher {
   id: number;
@@ -65,6 +54,8 @@ export interface Transaction {
   totalPrice: number;
   voucher: Voucher;
   coupon: Coupon;
+  TicketType: TicketType;
+  user: User;
   status:
     | "waiting_for_payment"
     | "waiting_for_admin_confirmation"

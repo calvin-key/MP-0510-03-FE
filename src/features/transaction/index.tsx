@@ -15,8 +15,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Transaction, TransactionItem } from "@/types/transaction";
+import Footer from "@/components/Footer";
 
-const TransactionSummary = ({ transactionId }: { transactionId: number }) => {
+interface TransactionSummaryProps {
+  transactionId: number;
+}
+
+const TransactionSummary = ({ transactionId }: TransactionSummaryProps) => {
   const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { data: transaction, isLoading } = useGetTransaction(transactionId);
@@ -52,7 +57,7 @@ const TransactionSummary = ({ transactionId }: { transactionId: number }) => {
     }),
     onSubmit: async (values) => {
       if (selectedFile) {
-        await updateTransaction(
+        updateTransaction(
           {
             id: transactionId,
             paymentProof: selectedFile,
@@ -62,11 +67,15 @@ const TransactionSummary = ({ transactionId }: { transactionId: number }) => {
               toast.success("Payment proof uploaded successfully");
               formik.resetForm();
               setSelectedFile(null);
+              // Invalidate both queries to refresh the data
               queryClient.invalidateQueries({
                 queryKey: ["transaction", transactionId],
               });
+              queryClient.invalidateQueries({
+                queryKey: ["transactions"],
+              });
             },
-            onError: (error) => {
+            onError: (error: Error) => {
               toast.error("Failed to upload payment proof");
             },
           },
@@ -254,7 +263,7 @@ const TransactionSummary = ({ transactionId }: { transactionId: number }) => {
                   {formik.touched.paymentProof &&
                     formik.errors.paymentProof && (
                       <div className="mt-1 text-sm text-red-500">
-                        {formik.errors.paymentProof}
+                        {formik.errors.paymentProof as string}
                       </div>
                     )}
                 </div>

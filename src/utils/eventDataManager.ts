@@ -1,38 +1,33 @@
-import { EventData } from "@/utils/eventData";
+import { EventData } from "@/types/event";
+import { EventStatistics } from "@/types/eventStatistic";
 
-// This would typically be replaced with an API call or database interaction
-let events: EventData[] = [];
-
-export const addEvent = (event: EventData) => {
-  events.push(event);
+export const processStatisticsData = (data: EventStatistics[]): EventData[] => {
+  return data.map((stat) => ({
+    id: stat.eventId,
+    name: stat.eventName,
+    date: new Date(stat.startDate),
+    ticketsSold: stat.totalTransactions,
+    revenue: stat.totalRevenue,
+    attendance: stat.totalTransactions, // Assuming attendance equals transactions
+    attendees: [], // Empty array as per interface requirement
+  }));
 };
 
-export const getEvents = (): EventData[] => {
-  return events;
-};
+export const aggregateDataByMonth = (data: EventData[]) => {
+  const monthlyData = Array(12)
+    .fill(0)
+    .map(() => ({
+      ticketsSold: 0,
+      revenue: 0,
+      attendance: 0,
+    }));
 
-export const getEventsByYear = (year: number): EventData[] => {
-  return events.filter((event) => new Date(event.date).getFullYear() === year);
-};
-
-export const getEventsByMonth = (year: number, month: number): EventData[] => {
-  return events.filter((event) => {
-    const eventDate = new Date(event.date);
-    return eventDate.getFullYear() === year && eventDate.getMonth() === month;
+  data.forEach((event) => {
+    const month = new Date(event.date).getMonth();
+    monthlyData[month].ticketsSold += event.ticketsSold;
+    monthlyData[month].revenue += event.revenue;
+    monthlyData[month].attendance += event.attendance;
   });
-};
 
-export const getEventsByDay = (
-  year: number,
-  month: number,
-  day: number,
-): EventData[] => {
-  return events.filter((event) => {
-    const eventDate = new Date(event.date);
-    return (
-      eventDate.getFullYear() === year &&
-      eventDate.getMonth() === month &&
-      eventDate.getDate() === day
-    );
-  });
+  return monthlyData;
 };

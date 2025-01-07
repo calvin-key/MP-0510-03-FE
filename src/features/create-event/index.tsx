@@ -1,8 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useFormik } from "formik";
 import {
   Select,
   SelectContent,
@@ -10,18 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import useCreateEvent, {
+  CreateEventPayload,
+} from "@/hooks/api/event/useCreateEvent";
+import { useFormik } from "formik";
 import dynamic from "next/dynamic";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import CategoriesForm from "./components/CategoriesForm";
 import TicketType from "./components/TicketType";
-import useCreateEvent, {
-  CreateEventPayload,
-} from "@/hooks/api/event/useCreateEvent";
-import { toast } from "react-toastify";
-import { EventData } from "@/utils/eventData";
-import { addEvent } from "@/utils/eventDataManager";
 import { createEventSchema } from "./schemas";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
@@ -64,6 +61,8 @@ const CreateEventPage = () => {
         ...values,
         category: values.categories[0],
       };
+      console.log("Formatted Values:", formattedValues);
+
       await createEvent(formattedValues);
     },
   });
@@ -102,7 +101,10 @@ const CreateEventPage = () => {
     <main className="container mx-auto my-10 space-y-6 px-5">
       <h1 className="text-center text-3xl font-bold">Create An Event</h1>
 
-      <form onSubmit={formik.handleSubmit} className="space-y-6">
+      <form
+        onSubmit={formik.handleSubmit}
+        className="max-h-[75vh] space-y-6 overflow-y-auto"
+      >
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Event Details</h2>
           {/* Event Title */}

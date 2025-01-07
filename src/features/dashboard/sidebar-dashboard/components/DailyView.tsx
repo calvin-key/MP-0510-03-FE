@@ -1,6 +1,7 @@
+import React from "react";
 import {
   Bar,
-  BarChart,
+  BarChart as RechartsBarChart,
   ResponsiveContainer,
   XAxis,
   YAxis,
@@ -14,15 +15,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { EventData } from "@/utils/eventData";
+import { EventData } from "@/types/event";
 
 export function DailyView({ data }: { data: EventData[] }) {
   if (data.length === 0) {
     return <div className="py-8 text-center">No events on this day.</div>;
   }
 
-  const event = data[0]; // Assuming there's only one event per day
-
+  const event = data[0];
   const chartData = [
     { name: "Tickets Sold", value: event.ticketsSold },
     { name: "Attendance", value: event.attendance },
@@ -69,13 +69,13 @@ export function DailyView({ data }: { data: EventData[] }) {
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
+            <RechartsBarChart data={chartData}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <Legend />
               <Bar dataKey="value" fill="#8884d8" />
-            </BarChart>
+            </RechartsBarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>

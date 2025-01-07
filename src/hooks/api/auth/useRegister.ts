@@ -11,6 +11,7 @@ interface RegisterPayload {
   fullName: string;
   email: string;
   password: string;
+  role: string;
 }
 
 const useRegister = () => {

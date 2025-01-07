@@ -7,6 +7,7 @@ import { CalendarDays, MapPin, Ticket, TicketX } from "lucide-react";
 import { Transaction } from "@/types/transaction";
 import { useGetUserTransactions } from "@/hooks/api/transaction/useGetUserTransactions";
 import TransactionSkeleton from "./components/TransactionsSkeleton";
+import Footer from "@/components/Footer";
 
 const UserTransactions = () => {
   const { data: transactions, isLoading } = useGetUserTransactions();
