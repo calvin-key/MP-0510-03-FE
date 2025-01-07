@@ -102,6 +102,8 @@ const TransactionSummary = ({ transactionId }: TransactionSummaryProps) => {
 
   if (!transaction) return null;
 
+  console.log(transaction?.voucher?.code);
+
   return (
     <div className="container mx-auto space-y-6 p-4">
       <Card>
@@ -150,7 +152,7 @@ const TransactionSummary = ({ transactionId }: TransactionSummaryProps) => {
                 </>
               )}
 
-              {transaction?.voucher && (
+              {transaction?.voucherId && (
                 <>
                   <span className="text-gray-600">
                     Voucher ({transaction?.voucher?.code}):
@@ -165,17 +167,17 @@ const TransactionSummary = ({ transactionId }: TransactionSummaryProps) => {
                 </>
               )}
 
-              {transaction?.coupon && (
+              {transaction?.couponId && (
                 <>
                   <span className="text-gray-600">
-                    Coupon ({transaction.coupon.code}):
+                    Coupon ({transaction.coupon?.code}):
                   </span>
                   <span className="text-green-600">
                     -
                     {new Intl.NumberFormat("id-ID", {
                       style: "currency",
                       currency: "IDR",
-                    }).format(transaction.coupon.nominal)}
+                    }).format(transaction.coupon?.nominal)}
                   </span>
                 </>
               )}

@@ -41,6 +41,9 @@ const useCreateEvent = () => {
 
       const formData = new FormData();
 
+      console.log("Original ticketTypes:", payload.ticketTypes);
+      console.log("Price type:", typeof payload.ticketTypes[0].price);
+
       formData.append("name", payload.name);
       formData.append("description", payload.description);
       formData.append("address", payload.address);
@@ -51,8 +54,8 @@ const useCreateEvent = () => {
 
       const formattedTicketTypes = payload.ticketTypes.map((ticket) => ({
         ticketType: ticket.ticketType,
-        price: parseInt(ticket.price.toString()),
-        availableSeats: parseInt(ticket.availableSeats.toString()),
+        price: ticket.price,
+        availableSeats: parseInt(ticket.availableSeats.toLocaleString()),
       }));
 
       formData.append("ticketTypes", JSON.stringify(formattedTicketTypes));
@@ -79,6 +82,8 @@ const useCreateEvent = () => {
         error.response?.data?.message ||
         error.response?.data ||
         "Failed to create event";
+        console.log(errorMessage);
+        
       toast.error(errorMessage);
     },
   });

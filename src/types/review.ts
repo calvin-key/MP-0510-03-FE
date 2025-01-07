@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 export interface Review {
   id: number;
   userId: number;
@@ -6,7 +8,7 @@ export interface Review {
   rating: number;
   createdAt: Date;
   updatedAt: Date;
-  user: { fullName: string; email: string; phoneNumber: string };
+  user: User;
   event: {
     name: string;
     category: { id: number; name: string };

@@ -1,7 +1,10 @@
-import WriteReviewPage from "@/features/write-review/WriteReviewPage";
+"use client";
+
+import WriteReviewPage from "@/features/write-review";
+import CustomerAuthGuard from "@/hoc/AuthGuardCustomer";
 
 const writeReview = () => {
-  return <WriteReviewPage/>;
+  return <WriteReviewPage />;
 };
 
-export default writeReview;
+export default CustomerAuthGuard(writeReview);

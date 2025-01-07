@@ -1,59 +1,166 @@
 "use client";
 
+import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
-  const router = useRouter();
-  const { data } = useSession();
-  const user = data?.user;
+  const { data: session } = useSession();
+  const user = session?.user;
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const logout = () => signOut();
 
+  const navItems = [
+    { label: "Find Events", href: "/", roles: ["CUSTOMER", "ORGANIZER"] },
+    {
+      label: "My Orders",
+      href: "/transactions",
+      roles: ["CUSTOMER", "ORGANIZER"],
+    },
+    { label: "Write Review", href: "/write-review", roles: ["CUSTOMER"] },
+    { label: "Dashboard", href: "/dashboard", roles: ["ORGANIZER"] },
+    {
+      label: "Create Event",
+      href: "/dashboard/create-event",
+      roles: ["ORGANIZER"],
+    },
+  ];
+
+  const filteredNavItems = navItems.filter(
+    (item) =>
+      !user?.role || item.roles.includes(user.role as "CUSTOMER" | "ORGANIZER"),
+  );
+
   return (
-    <nav className="mb-5 h-14 bg-black text-white md:mb-0">
-      <div className="mx-5 flex h-full items-center justify-between">
-        <div>
-          <Link href="/" className="text-xl font-semibold">
-            Scaena
-          </Link>
-        </div>
-        <div className="hidden h-full items-center gap-2 md:flex">
-          <Link
-            href="/"
-            className="rounded-full border-orange-400 px-5 py-2 hover:border-[1px] hover:text-orange-400"
-          >
-            Find Events
-          </Link>
-          <Link
-            href="/"
-            className="rounded-full border-orange-400 px-5 py-2 hover:border-[1px] hover:text-orange-400"
-          >
-            My Orders
-          </Link>
-          <Link
-            href="/"
-            className="rounded-full border-orange-400 px-5 py-2 hover:border-[1px] hover:text-orange-400"
-          >
-            Host Events
-          </Link>
-          {!user?.id && (
-            <Link
-              href="/login"
-              className="rounded-full border-orange-400 px-5 py-2 hover:border-[1px] hover:text-orange-400"
-            >
-              Sign In
+    <nav className="fixed left-0 right-0 top-0 z-50 bg-black text-white shadow-lg">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <Link href="/" className="text-xl font-semibold h-full align-middle items-center">
+              <div className="flex">
+                <Image src="/logo.ico" alt="logo" width={25} height={25} />
+                caena
+              </div>
             </Link>
-          )}
-          {!!user?.id && (
-            <>
-              <p onClick={() => router.push("/create")}>Create</p>
-              <p onClick={logout}>Logout</p>
-            </>
-          )}
+          </div>
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-center space-x-4">
+              {filteredNavItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-full border-orange-400 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out hover:bg-orange-700 hover:text-white"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="hidden md:block">
+            {user ? (
+              <div className="flex items-center">
+                <Image
+                  src={user.profilePicture || "/default-avatar.png"}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="mr-2 rounded-full"
+                />
+                <span className="mr-4">{user.fullName}</span>
+                <button
+                  onClick={logout}
+                  className="rounded-full bg-orange-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out hover:bg-orange-700"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-full bg-orange-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out hover:bg-orange-700"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
+          <div className="-mr-2 flex md:hidden">
+            <button
+              onClick={toggleMenu}
+              className="inline-flex items-center justify-center rounded-md p-2 text-orange-400 hover:bg-orange-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-800"
+            >
+              <span className="sr-only">Open main menu</span>
+              {isMenuOpen ? (
+                <X className="block h-6 w-6" />
+              ) : (
+                <Menu className="block h-6 w-6" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
+
+      {isMenuOpen && (
+        <div className="md:hidden">
+          <div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+            {filteredNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-orange-700 hover:text-white"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+          <div className="border-t border-orange-700 pb-3 pt-4">
+            {user ? (
+              <div className="flex items-center px-5">
+                <div className="flex-shrink-0">
+                  <Image
+                    src={user.profilePicture || "/default-avatar.png"}
+                    alt="Profile"
+                    width={40}
+                    height={40}
+                    className="rounded-full"
+                  />
+                </div>
+                <div className="ml-3">
+                  <div className="text-base font-medium leading-none text-white">
+                    {user.fullName}
+                  </div>
+                  <div className="text-sm font-medium leading-none text-orange-400">
+                    {user.email}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 space-y-1 px-2">
+                <Link
+                  href="/login"
+                  className="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-orange-700 hover:text-white"
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
+            {user && (
+              <div className="mt-3 space-y-1 px-2">
+                <button
+                  onClick={logout}
+                  className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-white hover:bg-orange-700 hover:text-white"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
