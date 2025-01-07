@@ -24,12 +24,11 @@ export default function SettingsPage() {
     initialValues: {
       password: "",
       newPassword: "",
-      confirmPassword: "", // Changed to match schema
+      confirmPassword: "",
     },
     validationSchema: ChangePasswordSchema,
     onSubmit: async (values, actions) => {
       try {
-        // Only send required fields to API
         const payload = {
           password: values.password,
           newPassword: values.newPassword,
@@ -45,8 +44,8 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="px-4 py-6">
-      <Card className="h-screen w-full shadow-sm">
+    <div className="min-h-auto p-4">
+      <Card className="mx-auto max-w-2xl">
         <CardHeader className="border-b pb-6 text-center">
           <CardTitle className="text-xl sm:text-2xl">
             Security Settings
@@ -62,8 +61,7 @@ export default function SettingsPage() {
             className="space-y-6 sm:space-y-8"
           >
             <div className="space-y-4 sm:space-y-6">
-              {/* Current Password */}
-              <div className="w-full">
+              <div className="w-full py-4">
                 <Label htmlFor="password">Current Password</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
@@ -97,8 +95,7 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* New Password */}
-              <div className="w-full">
+              <div className="w-full py-4">
                 <Label htmlFor="newPassword">New Password</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
@@ -132,8 +129,7 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* Confirm New Password */}
-              <div className="w-full">
+              <div className="w-full py-4">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
@@ -169,11 +165,10 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end pt-4">
+            <div className="pt-4">
               <Button
                 type="submit"
-                className="w-full bg-orange-500 px-6 hover:bg-orange-600 sm:w-auto"
+                className="w-full bg-orange-500 hover:bg-orange-600"
                 disabled={isPending || formik.isSubmitting}
               >
                 {isPending || formik.isSubmitting ? (

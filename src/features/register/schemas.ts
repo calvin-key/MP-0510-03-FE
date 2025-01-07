@@ -8,7 +8,7 @@ export const RegisterSchema = Yup.object().shape({
     .min(2, "Full Name must be at least 2 characters"),
   role: Yup.string()
     .required("Role is required")
-    .oneOf(["organizer", "customer"], "Select a valid role"),
+    .oneOf(["ORGANIZER", "CUSTOMER"], "Select a valid role"),
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string()
     .required("Password is required")

@@ -30,12 +30,7 @@ const updateTransaction = async ({
   return response.data;
 };
 
-export const useUpdateTransaction = (): UseMutationResult<
-  Transaction,
-  Error,
-  UpdateTransactionVariables,
-  unknown
-> => {
+export const useUpdateTransaction = () => {
   return useMutation({
     mutationFn: updateTransaction,
   });

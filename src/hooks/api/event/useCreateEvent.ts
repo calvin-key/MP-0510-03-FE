@@ -37,7 +37,7 @@ const useCreateEvent = () => {
   return useMutation<any, AxiosError<ErrorResponse>, CreateEventPayload>({
     mutationFn: async (payload) => {
       const session = await getSession();
-      const token = session?.user.token; 
+      const token = session?.user.token;
 
       const formData = new FormData();
 
@@ -72,7 +72,7 @@ const useCreateEvent = () => {
     onSuccess: () => {
       toast.success("Event created successfully!");
       queryClient.invalidateQueries({ queryKey: ["events"] });
-      router.push("/dashboard");
+      router.push("/dashboard/event-list");
     },
     onError: (error: AxiosError<any>) => {
       const errorMessage =

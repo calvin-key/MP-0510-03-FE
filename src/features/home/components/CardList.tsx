@@ -98,6 +98,7 @@ const CardList: FC = () => {
           page={page}
           take={data.meta.take}
           total={data.meta.total}
+          totalPages={0}
         />
       )}
     </section>

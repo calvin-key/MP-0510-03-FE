@@ -10,6 +10,7 @@ import {
   MapPin,
   MoreVertical,
   ChevronRight,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,233 +28,175 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-interface Event {
-  id: string;
-  title: string;
-  category: string;
-  date: string;
-  location: string;
-  status: "upcoming" | "ongoing" | "completed";
-  attendees: number;
-  price: number;
-  image: string;
-}
-
-interface FilterFormValues {
-  searchQuery: string;
-  category: string;
-}
-
-const sampleEvents: Event[] = [
-  {
-    id: "1",
-    title: "Summer Music Festival 2024",
-    category: "Music",
-    date: "2024-07-15",
-    location: "Central Park, NY",
-    status: "upcoming",
-    attendees: 500,
-    price: 99.99,
-    image: "/api/placeholder/400/200",
-  },
-  {
-    id: "2",
-    title: "Tech Conference 2024",
-    category: "Technology",
-    date: "2024-08-20",
-    location: "Convention Center, SF",
-    status: "upcoming",
-    attendees: 300,
-    price: 199.99,
-    image: "/api/placeholder/400/200",
-  },
-];
-
-const categories = [
-  { value: "all", label: "All Categories" },
-  { value: "music", label: "Music" },
-  { value: "technology", label: "Technology" },
-  { value: "sports", label: "Sports" },
-];
+import useOrganizerEvents from "@/hooks/api/event/useGetOrganizerEvents";
+import LoadingScreen from "@/components/LoadingScreen";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 export default function EventListPage() {
+  const { data: session } = useSession();
   const router = useRouter();
 
-  const formik = useFormik<FilterFormValues>({
+  const formik = useFormik({
     initialValues: {
       searchQuery: "",
       category: "all",
+      city: "",
     },
     onSubmit: (values) => {
       console.log("Filter values:", values);
     },
   });
 
-  const filteredEvents = sampleEvents.filter((event) => {
-    const matchesSearch = event.title
-      .toLowerCase()
-      .includes(formik.values.searchQuery.toLowerCase());
-    const matchesCategory =
-      formik.values.category === "all" ||
-      event.category.toLowerCase() === formik.values.category;
-    return matchesSearch && matchesCategory;
-  });
+  const { data: events, isLoading, error } = useOrganizerEvents();
 
-  const getStatusColor = (status: Event["status"]) => {
-    const baseStyles = "rounded-full px-2 py-1 text-xs font-medium text-white";
-    switch (status) {
-      case "upcoming":
-        return `${baseStyles} bg-gradient-to-r from-blue-500 to-blue-600`;
-      case "ongoing":
-        return `${baseStyles} bg-gradient-to-r from-green-500 to-green-600`;
-      case "completed":
-        return `${baseStyles} bg-gradient-to-r from-gray-500 to-gray-600`;
-      default:
-        return `${baseStyles} bg-gradient-to-r from-gray-500 to-gray-600`;
+  React.useEffect(() => {
+    if (!session) {
+      router.push("/auth/signin");
     }
-  };
+  }, [session, router]);
+
+  if (!session) return <LoadingScreen />;
+  if (isLoading) return <LoadingScreen />;
+  if (error)
+    return (
+      <Alert className="mx-auto mt-8 max-w-2xl">
+        <AlertDescription>
+          Error loading events: {(error as Error).message}
+        </AlertDescription>
+      </Alert>
+    );
 
   return (
-    <div className="space-y-8 p-6">
-      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Events</h1>
-          <p className="mt-2 text-gray-500">
-            Create and manage your upcoming events
-          </p>
-        </div>
-        <Button
-          onClick={() => router.push("/dashboard/create-event")}
-          className="gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transition-all hover:from-orange-600 hover:to-orange-700"
-        >
-          <Plus className="h-4 w-4" /> Create Event
-        </Button>
-      </div>
-
-      <form onSubmit={formik.handleSubmit} className="space-y-6">
-        <div className="flex flex-col gap-4 md:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              name="searchQuery"
-              placeholder="Search events..."
-              className="pl-10"
-              value={formik.values.searchQuery}
-              onChange={formik.handleChange}
-            />
-          </div>
-          <Select
-            value={formik.values.category}
-            onValueChange={(value) => formik.setFieldValue("category", value)}
-          >
-            <SelectTrigger className="w-full md:w-[200px]">
-              <SelectValue placeholder="Select Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </form>
-
-      {filteredEvents.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event) => (
-            <Card
-              key={event.id}
-              className="group overflow-hidden border-gray-200 transition-all duration-300 hover:shadow-lg"
+    <div className="min-h-auto bg-gray-50">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Header Section */}
+        <div className="mb-8 rounded-xl bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">My Events</h1>
+              <p className="mt-2 text-gray-600">Manage your created events</p>
+            </div>
+            <Button
+              onClick={() => router.push("/dashboard/create-event")}
+              className="gap-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg transition-all hover:from-orange-600 hover:to-orange-700"
             >
-              <div className="relative">
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              <Plus className="h-4 w-4" /> Create Event
+            </Button>
+          </div>
+
+          {/* Filter Section */}
+          <form onSubmit={formik.handleSubmit} className="mt-6">
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  name="searchQuery"
+                  placeholder="Search events..."
+                  className="border-gray-200 bg-gray-50 pl-10"
+                  value={formik.values.searchQuery}
+                  onChange={formik.handleChange}
                 />
-                <Badge
-                  className={`absolute left-4 top-4 ${getStatusColor(
-                    event.status,
-                  )}`}
-                >
-                  {event.status}
-                </Badge>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-2"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem className="gap-2">
-                      Edit <ChevronRight className="ml-auto h-4 w-4" />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2">
-                      View Details <ChevronRight className="ml-auto h-4 w-4" />
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
+              <Select
+                value={formik.values.category}
+                onValueChange={(value) =>
+                  formik.setFieldValue("category", value)
+                }
+              >
+                <SelectTrigger className="w-full border-gray-200 bg-gray-50 md:w-[200px]">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[
+                    { value: "all", label: "All Categories" },
+                    { value: "music", label: "Music" },
+                    { value: "technology", label: "Technology" },
+                    { value: "sports", label: "Sports" },
+                  ].map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                name="city"
+                placeholder="Enter city..."
+                value={formik.values.city}
+                onChange={formik.handleChange}
+                className="w-full border-gray-200 bg-gray-50 md:w-[200px]"
+              />
+            </div>
+          </form>
+        </div>
 
-              <CardContent className="p-4">
-                <h3 className="mb-3 text-xl font-bold tracking-tight">
-                  {event.title}
-                </h3>
-
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    {new Date(event.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
+        {/* Events Grid */}
+        {events && events.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {events.map((event) => (
+              <Card
+                key={event.id}
+                className="overflow-hidden transition-shadow duration-300 hover:shadow-lg"
+              >
+                <div className="relative">
+                  <img
+                    src={event.image || "/api/placeholder/400/200"}
+                    alt={event.name}
+                    className="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                  <Badge className="absolute right-4 top-4 bg-white/90 px-3 py-1 text-gray-900">
+                    <Calendar className="mr-2 inline-block h-4 w-4" />
+                    {new Date(event.startDate).toLocaleDateString("en-ID", {
+                      month: "short",
                       day: "numeric",
                     })}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    {event.location}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-400" />
-                    {event.attendees.toLocaleString()} attendees
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-lg font-bold text-orange-600">
-                    ${event.price.toFixed(2)}
-                  </span>
-                  <Badge
-                    variant="outline"
-                    className="border-orange-200 bg-orange-50 text-orange-600"
-                  >
-                    {event.category}
                   </Badge>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Alert className="mx-auto mt-8 max-w-md bg-gray-50">
-          <AlertDescription className="text-center">
-            No events found matching your search criteria.
-          </AlertDescription>
-        </Alert>
-      )}
+                <CardContent className="p-5">
+                  <h3 className="mb-2 line-clamp-1 text-xl font-bold text-gray-900">
+                    {event.name}
+                  </h3>
+                  <p className="mb-4 flex items-center text-sm text-gray-600">
+                    <MapPin className="mr-2 h-4 w-4" />
+                    {event.address || "Unknown Location"}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <Badge
+                      variant="secondary"
+                      className="bg-orange-100 text-orange-700"
+                    >
+                      {new Date(event.startDate).toLocaleTimeString("en-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Badge>
+                    <Link href={`/dashboard/edit-event/${event.id}`}>
+                      <Button
+                        variant="outline"
+                        className="gap-2 hover:bg-orange-50"
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Alert className="bg-white shadow-sm">
+            <AlertDescription className="flex items-center justify-center py-8 text-gray-600">
+              You haven't created any events yet. Click "Create Event" to get
+              started!
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
     </div>
   );
 }

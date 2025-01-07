@@ -69,7 +69,12 @@ export default function CategoriesPage() {
       }
     },
   });
-
+  console.log("Form Status:", {
+    isValid: formik.isValid,
+    dirty: formik.dirty,
+    errors: formik.errors,
+    values: formik.values,
+  });
   const handleEditCategory = (category: Category) => {
     setEditingCategory(category);
     formik.setValues({
@@ -88,14 +93,6 @@ export default function CategoriesPage() {
             .toLowerCase()
             .includes(searchQuery.toLowerCase())),
     ) || [];
-
-  // if (isLoading) {
-  //   return (
-  //     <div className="flex h-screen items-center justify-center">
-  //       <div className="text-lg">Loading...</div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="space-y-6 p-6">

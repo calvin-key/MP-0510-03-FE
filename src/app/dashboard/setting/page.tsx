@@ -30,7 +30,7 @@ const Profile = () => {
           </Breadcrumb>
         </div>
       </header>
-      <SettingPage />;
+      <SettingPage />
     </>
   );
 };

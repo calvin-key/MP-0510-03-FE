@@ -30,7 +30,7 @@ const EventCategories = () => {
           </Breadcrumb>
         </div>
       </header>
-      <CategoriesPage />;
+      <CategoriesPage />
     </>
   );
 };

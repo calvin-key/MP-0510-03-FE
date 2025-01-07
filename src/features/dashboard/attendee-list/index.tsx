@@ -1,7 +1,13 @@
-// src/app/attendedList.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -17,131 +23,155 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { toast } from "react-toastify";
-import useAttendeeList from "@/hooks/api/auth/useAttendeeList";
+import useOrganizerEvents from "@/hooks/api/event/useGetOrganizerEvents";
+import useGetAttendeesByEvent from "@/hooks/api/attendee-list/useGetAttendees";
+import { Transaction } from "@/types/transaction";
 
-export default function AttendedList() {
-  const [selectedEvent, setSelectedEvent] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState("eventStartDate");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+interface Attendee {
+  id?: number;
+  name: string;
+  ticketQuantity: number;
+  totalPaid: number;
+  transaction?: Transaction;
+  createdAt: Date;
+}
 
-  const { data, isLoading, error } = useAttendeeList({
-    page: currentPage,
-    take: 10,
-    sortBy,
-    sortOrder,
-    eventId: selectedEvent === "all" ? undefined : Number(selectedEvent),
-    search: searchQuery,
-  });
+const AttendancePage = () => {
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null);
 
-  // Handle error with toast
-  useEffect(() => {
-    if (error) {
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch attendee list",
-      );
-    }
-  }, [error]);
+  const {
+    data: events,
+    isLoading: isLoadingEvents,
+    error: errorEvents,
+  } = useOrganizerEvents();
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
+  const {
+    data: attendees,
+    isLoading: isLoadingAttendees,
+    error: errorAttendees,
+  } = useGetAttendeesByEvent(selectedEventId || 0);
+
+  const handleEventChange = (value: string) => {
+    setSelectedEventId(Number(value));
+  };
+
+  const selectedEvent = events?.find((event) => event.id === selectedEventId);
+
+  const totalTicketsSold =
+    attendees?.reduce((acc, attendee) => acc + attendee.ticketCount, 0) || 0;
+  const totalRevenue =
+    attendees?.reduce((acc, attendee) => acc + (attendee.totalPrice || 0), 0) ||
+    0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Attendee List</h1>
-      </div>
+    <div className="container mx-auto py-10">
+      <h1 className="mb-5 text-3xl font-bold">Event Attendees</h1>
+      <Card>
+        <CardHeader>
+          <CardTitle>Attendee List</CardTitle>
+          <CardDescription>View attendees for each event</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-6">
+            <Select onValueChange={handleEventChange}>
+              <SelectTrigger className="w-[280px]">
+                <SelectValue placeholder="Select an event" />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingEvents ? (
+                  <SelectItem key="loading" value="loading" disabled>
+                    Loading...
+                  </SelectItem>
+                ) : errorEvents ? (
+                  <SelectItem key="error" value="error" disabled>
+                    Error loading events
+                  </SelectItem>
+                ) : (
+                  events?.map((event) => (
+                    <SelectItem key={event.id} value={event.id.toString()}>
+                      {event.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search attendees..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by event" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Events</SelectItem>
-            {/* Event list will come from your data */}
-          </SelectContent>
-        </Select>
-      </div>
+          {isLoadingAttendees ? (
+            <div className="rounded-lg bg-gray-50 p-8 text-center text-gray-500">
+              Loading attendees...
+            </div>
+          ) : errorAttendees ? (
+            <div className="rounded-lg bg-red-50 p-8 text-center text-red-500">
+              Error loading attendees: {errorAttendees.message}
+            </div>
+          ) : attendees && attendees.length > 0 ? (
+            <div className="space-y-6">
+              <div className="overflow-hidden rounded-lg border shadow-sm">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="py-4 text-center font-semibold">
+                        Name
+                      </TableHead>
+                      <TableHead className="text-center font-semibold">
+                        Ticket Quantity
+                      </TableHead>
+                      <TableHead className="text-center font-semibold">
+                        Amount
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {attendees.map((attendee, index) => (
+                      <TableRow
+                        key={`attendee-${attendee.id || index}`}
+                        className="transition-colors hover:bg-gray-50"
+                      >
+                        <TableCell className="py-4 text-center">
+                          {attendee.name}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {attendee.ticketCount}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {new Intl.NumberFormat("id-ID", {
+                            style: "currency",
+                            currency: "IDR",
+                          }).format(attendee.totalPrice)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Event Name</TableHead>
-              <TableHead>Ticket Type</TableHead>
-              <TableHead>Available Seats</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Revenue</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data?.data.map((attendee) => (
-              <TableRow key={attendee.id}>
-                <TableCell>{attendee.eventName}</TableCell>
-                <TableCell>{attendee.ticketType}</TableCell>
-                <TableCell>{attendee.availableSeats}</TableCell>
-                <TableCell>${attendee.price.toFixed(2)}</TableCell>
-                <TableCell>${attendee.revenue.toFixed(2)}</TableCell>
-                <TableCell>
-                  {new Date(attendee.eventStartDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  {new Date(attendee.eventEndDate).toLocaleDateString()}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {data && data.meta.totalPages > 1 && (
-        <div className="flex justify-end gap-2">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            className="rounded-md bg-gray-100 px-4 py-2 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="px-4 py-2">
-            Page {currentPage} of {data.meta.totalPages}
-          </span>
-          <button
-            disabled={currentPage === data.meta.totalPages}
-            onClick={() =>
-              setCurrentPage((prev) =>
-                Math.min(data.meta.totalPages || prev, prev + 1),
-              )
-            }
-            className="rounded-md bg-gray-100 px-4 py-2 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      )}
+              {selectedEvent && (
+                <div className="mx-auto max-w-2xl rounded-lg bg-gray-50 p-6">
+                  <h3 className="mb-4 text-lg font-semibold">Event Summary</h3>
+                  <div className="space-y-2">
+                    <p>Total Attendees: {attendees.length}</p>
+                    <p>Total Tickets Sold: {totalTicketsSold}</p>
+                    <p>
+                      Total Revenue:{" "}
+                      {new Intl.NumberFormat("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                      }).format(totalRevenue)}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-lg bg-gray-50 p-8 text-center text-gray-500">
+              No attendees available for this event.
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default AttendancePage;

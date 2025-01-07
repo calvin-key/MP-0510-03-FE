@@ -3,8 +3,8 @@ import { useState } from "react";
 
 interface ReferralReward {
   referrerCode?: string;
-  userId: string; // Required for all rewards
-  recipientId?: string; // Optional, used when giving points to referrer
+  userId: string;
+  recipientId?: string;
   rewardType: "POINTS" | "COUPON";
   pointsAmount?: number;
   couponCode?: string;

@@ -44,7 +44,6 @@ const TransactionPage: React.FC = () => {
       status: "pending",
       paymentProof: "/api/placeholder/400/300",
     },
-    // Add more sample transactions as needed
   ]);
 
   const handleAction = (

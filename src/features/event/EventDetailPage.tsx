@@ -10,6 +10,7 @@ import useGetEvent from "@/hooks/api/event/useGetEvent";
 import Markdown from "@/components/Markdown";
 import { useSession } from "next-auth/react";
 import EventDetailSkeleton from "./components/EventDetailSkeleton";
+import Footer from "@/components/Footer";
 
 interface EventDetailPageProps {
   eventId: number;
@@ -44,7 +45,6 @@ const EventDetailPage: FC<EventDetailPageProps> = ({ eventId }) => {
           className="rounded-lg object-cover"
         />
       </div>
-
       <div className="relative flex flex-col gap-9 py-10 lg:flex-row">
         <div className="flex-1 space-y-14 lg:max-w-[60%]">
           <h1 className="text-3xl font-bold md:text-4xl">{data.name}</h1>

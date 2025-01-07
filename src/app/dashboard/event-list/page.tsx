@@ -1,3 +1,5 @@
+"use client";
+
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -9,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import EventListPage from "@/features/dashboard/event-list";
+import OrganizerAuthGuard from "@/hoc/AuthGuardOrganizer";
 
 const EventList = () => {
   return (
@@ -30,9 +33,9 @@ const EventList = () => {
           </Breadcrumb>
         </div>
       </header>
-      <EventListPage />;
+      <EventListPage />
     </>
   );
 };
 
-export default EventList;
+export default OrganizerAuthGuard(EventList);
