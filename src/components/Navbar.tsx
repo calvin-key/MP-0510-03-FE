@@ -4,7 +4,14 @@ import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Settings, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const { data: session } = useSession();
@@ -41,7 +48,10 @@ const Navbar = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/" className="text-xl font-semibold h-full align-middle items-center">
+            <Link
+              href="/"
+              className="h-full items-center align-middle text-xl font-semibold"
+            >
               <div className="flex">
                 <Image src="/logo.ico" alt="logo" width={25} height={25} />
                 caena
@@ -64,20 +74,40 @@ const Navbar = () => {
           <div className="hidden md:block">
             {user ? (
               <div className="flex items-center">
-                <Image
-                  src={user.profilePicture || "/default-avatar.png"}
-                  alt="Profile"
-                  width={32}
-                  height={32}
-                  className="mr-2 rounded-full"
-                />
-                <span className="mr-4">{user.fullName}</span>
-                <button
-                  onClick={logout}
-                  className="rounded-full bg-orange-600 px-3 py-2 text-sm font-medium transition duration-150 ease-in-out hover:bg-orange-700"
-                >
-                  Logout
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center">
+                    <Image
+                      src={user.profilePicture || "/default-avatar.png"}
+                      alt="Profile"
+                      width={32}
+                      height={32}
+                      className="mr-2 rounded-full"
+                    />
+                    <span className="mr-4">{user.fullName}</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end">
+                    <DropdownMenuItem>
+                      <Link
+                        href="/dashboard/profile"
+                        className="flex w-full items-center"
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Link
+                        href="/dashboard/setting"
+                        className="flex w-full items-center"
+                      >
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>Logout</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
               <Link
@@ -150,6 +180,18 @@ const Navbar = () => {
             )}
             {user && (
               <div className="mt-3 space-y-1 px-2">
+                <Link
+                  href="/dashboard/profile"
+                  className="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-orange-700 hover:text-white"
+                >
+                  Profile
+                </Link>
+                <Link
+                  href="/dashboard/setting"
+                  className="block rounded-md px-3 py-2 text-base font-medium text-white hover:bg-orange-700 hover:text-white"
+                >
+                  Settings
+                </Link>
                 <button
                   onClick={logout}
                   className="block w-full rounded-md px-3 py-2 text-left text-base font-medium text-white hover:bg-orange-700 hover:text-white"

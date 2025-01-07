@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/card";
 import { EventData } from "@/types/event";
 
-// Formatter function untuk Rupiah
 const formatToRupiah = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",

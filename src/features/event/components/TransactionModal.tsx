@@ -159,7 +159,7 @@ export function TransactionModal({
 
           {session.status === "authenticated" ? (
             <>
-              {/* Voucher Selection */}
+           
               <div className="space-y-2">
                 <Label htmlFor="voucherId">Available Vouchers</Label>
                 <Select
@@ -202,7 +202,7 @@ export function TransactionModal({
                 </Select>
               </div>
 
-              {/* Coupon Input */}
+            
               <div className="space-y-2">
                 <Label htmlFor="couponCode">Coupon Code</Label>
                 <Input
@@ -213,7 +213,7 @@ export function TransactionModal({
                 />
               </div>
 
-              {/* Points Input */}
+           
               <div className="space-y-2">
                 <Label htmlFor="pointsUsed">
                   Use Points (Available: {userPoints})

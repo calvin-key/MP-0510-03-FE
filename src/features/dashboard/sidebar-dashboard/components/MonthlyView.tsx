@@ -18,7 +18,6 @@ const COLORS = [
   "#ffc658",
 ];
 
-// Formatter function untuk Rupiah
 const formatToRupiah = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -28,7 +27,6 @@ const formatToRupiah = (value: number) => {
   }).format(value);
 };
 
-// Custom Tooltip formatter
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (

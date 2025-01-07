@@ -20,7 +20,6 @@ import {
 import { EventData } from "@/types/event";
 import { aggregateDataByMonth } from "@/utils/eventDataManager";
 
-// Formatter function untuk Rupiah
 const formatToRupiah = (value: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -65,41 +64,44 @@ export function AnnualView({ data }: { data: EventData[] }) {
   );
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatToRupiah(totalRevenue)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Tickets Sold
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalTicketsSold.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Attendance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalAttendance.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
       <Card>
-        <CardHeader>
-          <CardTitle>Total Revenue</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {formatToRupiah(totalRevenue)}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Tickets Sold</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {totalTicketsSold.toLocaleString()}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Total Attendance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {totalAttendance.toLocaleString()}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="col-span-2">
         <CardHeader>
           <CardTitle>Monthly Revenue</CardTitle>
           <CardDescription>Revenue trend throughout the year</CardDescription>
