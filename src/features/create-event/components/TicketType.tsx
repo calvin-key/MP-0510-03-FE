@@ -64,6 +64,7 @@ const TicketType = ({ values, setFieldValue }: TicketTypeProps) => {
                 <Input
                   type="number"
                   placeholder="e.g., 100000"
+                  min={0}
                   value={ticket.price}
                   onChange={(e) =>
                     handleTicketChange(index, "price", e.target.value)
@@ -75,6 +76,7 @@ const TicketType = ({ values, setFieldValue }: TicketTypeProps) => {
                 <Input
                   type="number"
                   placeholder="e.g., 50"
+                  min={1}
                   value={ticket.availableSeats}
                   onChange={(e) =>
                     handleTicketChange(index, "availableSeats", e.target.value)

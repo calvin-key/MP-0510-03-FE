@@ -1,3 +1,5 @@
+"use client"
+
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -9,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import CreateVoucherPage from "@/features/create-voucher";
+import OrganizerAuthGuard from "@/hoc/AuthGuardOrganizer";
 
 const createVoucher = () => {
   return (
@@ -35,4 +38,4 @@ const createVoucher = () => {
   );
 };
 
-export default createVoucher;
+export default OrganizerAuthGuard(createVoucher);

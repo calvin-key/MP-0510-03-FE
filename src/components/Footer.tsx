@@ -17,10 +17,10 @@ const Footer = () => {
           <div className="flex flex-col gap-3">
             <h6 className="font-semibold text-white">Host Events</h6>
             <div className="flex flex-col gap-1">
-              <Link href="/" className="hover:text-orange-400">
+              <Link href="/user-guide" className="hover:text-orange-400">
                 How it works
               </Link>
-              <Link href="/" className="hover:text-orange-400">
+              <Link href="/dashboard/create-event" className="hover:text-orange-400">
                 Create an event
               </Link>
             </div>
@@ -29,10 +29,10 @@ const Footer = () => {
           <div className="flex flex-col gap-3">
             <h6 className="font-semibold text-white">Help</h6>
             <div className="flex flex-col gap-1">
-              <Link href="/" className="hover:text-orange-400">
+              <Link href="/transactions" className="hover:text-orange-400">
                 My Orders
               </Link>
-              <Link href="/" className="hover:text-orange-400">
+              <Link href="/contact-support" className="hover:text-orange-400">
                 Contact Support
               </Link>
               <Link href="/privacy-policy" className="hover:text-orange-400">
@@ -81,7 +81,7 @@ const Footer = () => {
       </div>
 
       <div className="bg-orange-700 p-5 text-center text-sm text-white">
-        <p>© 2024 Scaena. All rights reserved.</p>
+        <p>© 2025 Scaena. All rights reserved.</p>
       </div>
     </footer>
   );

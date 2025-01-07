@@ -123,8 +123,8 @@ const EventDetailPage: FC<EventDetailPageProps> = ({ eventId }) => {
           </div>
         </div>
 
-        <div className="sticky bottom-0 md:top-7 lg:w-[35%]">
-          <div className="sticky top-7 rounded-lg border-[1px] border-gray-200 bg-[#f7fafe] p-5 duration-100 hover:shadow-lg hover:shadow-orange-300">
+        <div className="sticky bottom-0 md:top-20 lg:w-[35%]">
+          <div className="sticky top-20 rounded-lg border-[1px] border-gray-200 bg-[#f7fafe] p-5 duration-100 hover:shadow-lg hover:shadow-orange-300">
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold">Available Tickets</h2>
               <div className="space-y-2">
