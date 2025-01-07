@@ -18,6 +18,27 @@ const COLORS = [
   "#ffc658",
 ];
 
+const formatToRupiah = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded border bg-white p-4 shadow-lg">
+        <p className="font-medium">{payload[0].name}</p>
+        <p className="text-gray-600">{formatToRupiah(payload[0].value)}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function MonthlyView({ data }: { data: EventData[] }) {
   const totalRevenue = data.reduce((sum, event) => sum + event.revenue, 0);
   const totalTicketsSold = data.reduce(
@@ -43,11 +64,32 @@ export function MonthlyView({ data }: { data: EventData[] }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${totalRevenue.toLocaleString()}
+              {formatToRupiah(totalRevenue)}
             </div>
           </CardContent>
         </Card>
-        {/* Similar cards for Tickets Sold and Attendance */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Tickets</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalTicketsSold.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Attendance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {totalAttendance.toLocaleString()}
+            </div>
+          </CardContent>
+        </Card>
       </div>
       <Card>
         <CardHeader>
@@ -65,8 +107,8 @@ export function MonthlyView({ data }: { data: EventData[] }) {
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"
-                label={({ name, percent }) =>
-                  `${name} ${(percent * 100).toFixed(0)}%`
+                label={({ name, value, percent }) =>
+                  `${name} (${(percent * 100).toFixed(0)}%)`
                 }
               >
                 {revenueData.map((entry, index) => (
@@ -76,8 +118,8 @@ export function MonthlyView({ data }: { data: EventData[] }) {
                   />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend formatter={(value, entry) => value} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>

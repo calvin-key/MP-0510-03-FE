@@ -20,6 +20,15 @@ import {
 import { EventData } from "@/types/event";
 import { aggregateDataByMonth } from "@/utils/eventDataManager";
 
+const formatToRupiah = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 export function AnnualView({ data }: { data: EventData[] }) {
   const monthlyData = aggregateDataByMonth(data);
   const monthNames = [
@@ -63,7 +72,7 @@ export function AnnualView({ data }: { data: EventData[] }) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ${totalRevenue.toLocaleString()}
+              {formatToRupiah(totalRevenue)}
             </div>
           </CardContent>
         </Card>
