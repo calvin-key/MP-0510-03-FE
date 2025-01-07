@@ -20,6 +20,16 @@ import {
 import { EventData } from "@/types/event";
 import { aggregateDataByMonth } from "@/utils/eventDataManager";
 
+// Formatter function untuk Rupiah
+const formatToRupiah = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 export function AnnualView({ data }: { data: EventData[] }) {
   const monthlyData = aggregateDataByMonth(data);
   const monthNames = [
@@ -55,44 +65,41 @@ export function AnnualView({ data }: { data: EventData[] }) {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${totalRevenue.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Tickets Sold
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalTicketsSold.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Attendance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {totalAttendance.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card>
+        <CardHeader>
+          <CardTitle>Total Revenue</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {formatToRupiah(totalRevenue)}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Tickets Sold</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {totalTicketsSold.toLocaleString()}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Attendance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {totalAttendance.toLocaleString()}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="col-span-2">
         <CardHeader>
           <CardTitle>Monthly Revenue</CardTitle>
           <CardDescription>Revenue trend throughout the year</CardDescription>
@@ -101,14 +108,24 @@ export function AnnualView({ data }: { data: EventData[] }) {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="#8884d8" />
+              <YAxis tickFormatter={(value) => formatToRupiah(value)} />
+              <Tooltip
+                formatter={(value: number) => [
+                  formatToRupiah(value),
+                  "Revenue",
+                ]}
+              />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#8884d8"
+                strokeWidth={2}
+              />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Tickets Sold vs Attendance</CardTitle>
@@ -123,8 +140,8 @@ export function AnnualView({ data }: { data: EventData[] }) {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="ticketsSold" fill="#8884d8" />
-              <Bar dataKey="attendance" fill="#82ca9d" />
+              <Bar dataKey="ticketsSold" fill="#8884d8" name="Tickets Sold" />
+              <Bar dataKey="attendance" fill="#82ca9d" name="Attendance" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

@@ -17,6 +17,16 @@ import {
 } from "@/components/ui/card";
 import { EventData } from "@/types/event";
 
+// Formatter function untuk Rupiah
+const formatToRupiah = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 export function DailyView({ data }: { data: EventData[] }) {
   if (data.length === 0) {
     return <div className="py-8 text-center">No events on this day.</div>;
@@ -45,7 +55,7 @@ export function DailyView({ data }: { data: EventData[] }) {
           </CardHeader>
           <CardContent>
             <div className="text-xl font-bold">
-              ${event.revenue.toLocaleString()}
+              {formatToRupiah(event.revenue)}
             </div>
           </CardContent>
         </Card>
