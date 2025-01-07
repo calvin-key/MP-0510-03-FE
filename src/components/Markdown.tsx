@@ -14,6 +14,15 @@ const Markdown: FC<MarkdownProps> = ({ content }) => {
       <h3 className="font-bold text-gray-800">{children}</h3>
     ),
     p: ({ children }) => <p className="text-base">{children}</p>,
+    ul: ({ children }) => (
+      <ul className="list-disc space-y-1 pl-6">{children}</ul>
+    ),
+    ol: ({ children }) => (
+      <ol className="list-decimal space-y-1 pl-6">{children}</ol>
+    ),
+    li: ({ children }) => (
+      <li className="text-base text-gray-700">{children}</li>
+    ),
   };
 
   return (
