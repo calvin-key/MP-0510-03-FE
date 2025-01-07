@@ -41,6 +41,7 @@ const useCreateEvent = () => {
 
       const formData = new FormData();
 
+      console.log("Final ticketTypes:", JSON.stringify(payload.ticketTypes));
       console.log("Original ticketTypes:", payload.ticketTypes);
       console.log("Price type:", typeof payload.ticketTypes[0].price);
 
@@ -51,13 +52,13 @@ const useCreateEvent = () => {
       formData.append("startDate", payload.startDate);
       formData.append("endDate", payload.endDate);
       formData.append("city", payload.city);
-
+      
       const formattedTicketTypes = payload.ticketTypes.map((ticket) => ({
         ticketType: ticket.ticketType,
-        price: ticket.price,
-        availableSeats: parseInt(ticket.availableSeats.toLocaleString()),
+        price: Number(ticket.price), 
+        availableSeats: Number(ticket.availableSeats), 
       }));
-
+      
       formData.append("ticketTypes", JSON.stringify(formattedTicketTypes));
       formData.append("categories", JSON.stringify(payload.categories));
 

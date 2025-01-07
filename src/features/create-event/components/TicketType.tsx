@@ -28,9 +28,16 @@ const TicketType = ({ values, setFieldValue }: TicketTypeProps) => {
     field: keyof Ticket,
     value: string,
   ) => {
-    const updatedTickets = values.map((ticket, i) =>
-      i === index ? { ...ticket, [field]: value } : ticket,
-    );
+    const updatedTickets = values.map((ticket, i) => {
+      if (i === index) {
+        return {
+          ...ticket,
+          [field]:
+            field === "price" || field === "availableSeats" ? +value : value,
+        };
+      }
+      return ticket;
+    });
     setFieldValue("ticketTypes", updatedTickets);
   };
 
