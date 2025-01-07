@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import ProfilePage from "@/features/dashboard/profile";
+import AuthGuardAll from "@/hoc/AuthGuardAll";
 
 const Profile = ({ params }: { params: { id: string } }) => {
   return (
@@ -35,4 +36,4 @@ const Profile = ({ params }: { params: { id: string } }) => {
   );
 };
 
-export default Profile;
+export default AuthGuardAll(Profile);
