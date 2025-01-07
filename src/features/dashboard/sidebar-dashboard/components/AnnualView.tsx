@@ -110,14 +110,24 @@ export function AnnualView({ data }: { data: EventData[] }) {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={chartData}>
               <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="#8884d8" />
+              <YAxis tickFormatter={(value) => formatToRupiah(value)} />
+              <Tooltip
+                formatter={(value: number) => [
+                  formatToRupiah(value),
+                  "Revenue",
+                ]}
+              />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#8884d8"
+                strokeWidth={2}
+              />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Tickets Sold vs Attendance</CardTitle>
@@ -132,8 +142,8 @@ export function AnnualView({ data }: { data: EventData[] }) {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="ticketsSold" fill="#8884d8" />
-              <Bar dataKey="attendance" fill="#82ca9d" />
+              <Bar dataKey="ticketsSold" fill="#8884d8" name="Tickets Sold" />
+              <Bar dataKey="attendance" fill="#82ca9d" name="Attendance" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
