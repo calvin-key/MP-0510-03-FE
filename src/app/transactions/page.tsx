@@ -1,7 +1,10 @@
-import UserTransactions from "@/features/transactions/TransactionsList";
+"use client";
+
+import UserTransactions from "@/features/transactions";
+import CustomerAuthGuard from "@/hoc/AuthGuardCustomer";
 
 const transactionsPage = () => {
   return <UserTransactions />;
 };
 
-export default transactionsPage;
+export default CustomerAuthGuard(transactionsPage);

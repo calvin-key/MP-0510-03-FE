@@ -26,7 +26,7 @@ const EventCard: FC<EventCardProp> = ({ event }) => {
   };
 
   return (
-    <Link href={`/events/${event.id}`}>
+    <Link href={`/events/${event.id}`} passHref>
       <Card className="duration-300 hover:bg-card hover:shadow-lg">
         <CardHeader className="space-y-4">
           <div className="relative h-[200px] w-full overflow-hidden rounded-lg bg-gray-200">

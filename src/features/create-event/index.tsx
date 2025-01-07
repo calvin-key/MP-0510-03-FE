@@ -28,7 +28,18 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
 
-const predefinedCities = ["Jakarta", "Yogyakarta", "Bali", "Bandung"];
+const predefinedCities = [
+  "Jakarta",
+  "Yogyakarta",
+  "Bali",
+  "Balikpapan",
+  "Bandung",
+  "Semarang",
+  "Surabaya",
+  "Manado",
+  "Malang",
+  "Medan",
+];
 
 const CreateEventPage = () => {
   const { mutateAsync: createEvent, isPending } = useCreateEvent();
@@ -63,7 +74,6 @@ const CreateEventPage = () => {
     }
   }, [formik.values.categories]);
 
-  // Add this to check if the form is actually valid
   console.log("Form Status:", {
     isValid: formik.isValid,
     dirty: formik.dirty,

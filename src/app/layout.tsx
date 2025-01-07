@@ -22,8 +22,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Scaena Dashboard",
-  description: "Event Management Dashboard",
+  title: "Scaena | Your Front-Row Ticket to Memorable Moments!",
+  description: "Your Front-Row Ticket to Memorable Moments!",
 };
 
 export default function RootLayout({
@@ -41,7 +41,7 @@ export default function RootLayout({
             <StoreProvider>
               <ReactQueryProvider>
                 <Navbar />
-                {children}
+                <main className="pt-16">{children}</main>
                 <Footer />
               </ReactQueryProvider>
               <ToastContainer />

@@ -48,6 +48,13 @@ const CardList: FC = () => {
             <option value="Yogyakarta">Yogyakarta</option>
             <option value="Bali">Bali</option>
             <option value="Jakarta">Jakarta</option>
+            <option value="Balikpapan">Balikpapan</option>
+            <option value="Bandung">Bandung</option>
+            <option value="Surbaya">Surabaya</option>
+            <option value="Semarang">Semarang</option>
+            <option value="Medan">Medan</option>
+            <option value="Manado">Manado</option>
+            <option value="Malang">Malang</option>
           </select>
         </div>
 

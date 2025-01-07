@@ -1,3 +1,5 @@
+"use client"
+
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -9,6 +11,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Link from "next/link";
 import CreateEventPage from "@/features/create-event";
+import OrganizerAuthGuard from "@/hoc/AuthGuardOrganizer";
 
 const CreateEvent = () => {
   return (
@@ -35,4 +38,4 @@ const CreateEvent = () => {
   );
 };
 
-export default CreateEvent;
+export default OrganizerAuthGuard(CreateEvent);

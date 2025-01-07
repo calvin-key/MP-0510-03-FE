@@ -1,17 +1,16 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import Image from "next/image";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
-
 const Carousel = () => {
-
   return (
-    <div className="relative z-10 mx-auto flex items-center justify-center md:h-full">
+    <div className="relative z-10 mx-auto flex items-center justify-center pt-5 md:h-full">
       <div className="relative w-[90%] max-w-5xl rounded-lg">
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
@@ -30,17 +29,46 @@ const Carousel = () => {
         >
           <SwiperSlide>
             <div className="flex h-40 items-center justify-center rounded-lg bg-gray-300 md:h-72">
+              <Image
+                src="/slide1.webp"
+                alt="slide-1"
+                fill
+                className="object-cover"
+              />
               <h2>Slide 1</h2>
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="flex h-40 items-center justify-center rounded-lg bg-gray-300 md:h-72">
+              <Image
+                src="/slide2.jpg"
+                alt="slide-2"
+                fill
+                className="object-cover"
+              />
               <h2>Slide 2</h2>
             </div>
           </SwiperSlide>
           <SwiperSlide>
             <div className="flex h-40 items-center justify-center rounded-lg bg-gray-300 md:h-72">
+            <Image
+                src="/slide3.jpg"
+                alt="slide-3"
+                fill
+                className="object-cover"
+              />
               <h2>Slide 3</h2>
+            </div>
+          </SwiperSlide>
+          <SwiperSlide>
+            <div className="flex h-40 items-center justify-center rounded-lg bg-gray-300 md:h-72">
+            <Image
+                src="/slide4.jpg"
+                alt="slide-4"
+                fill
+                className="object-cover"
+              />
+              <h2>Slide 4</h2>
             </div>
           </SwiperSlide>
 
@@ -51,7 +79,6 @@ const Carousel = () => {
             <ChevronRight strokeWidth={2.5} absoluteStrokeWidth />
           </button>
         </Swiper>
-
       </div>
     </div>
   );

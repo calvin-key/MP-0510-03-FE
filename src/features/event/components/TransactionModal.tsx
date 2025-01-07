@@ -256,7 +256,7 @@ export function TransactionModal({
             <Button
               type="submit"
               className="w-full bg-orange-400 hover:bg-orange-500"
-              disabled={calculateTotal() <= 0 || formik.isSubmitting}
+              disabled={calculateTotal() < 0 || formik.isSubmitting}
             >
               {formik.isSubmitting ? "Processing..." : "Confirm Purchase"}
             </Button>
