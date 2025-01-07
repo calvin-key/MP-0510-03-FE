@@ -91,7 +91,10 @@ const CreateEventPage = () => {
     <main className="container mx-auto my-10 space-y-6 px-5">
       <h1 className="text-center text-3xl font-bold">Create An Event</h1>
 
-      <form onSubmit={formik.handleSubmit} className="space-y-6">
+      <form
+        onSubmit={formik.handleSubmit}
+        className="max-h-[75vh] space-y-6 overflow-y-auto"
+      >
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Event Details</h2>
           {/* Event Title */}

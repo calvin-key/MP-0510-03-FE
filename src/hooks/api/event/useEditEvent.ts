@@ -1,3 +1,5 @@
+"use client";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
@@ -62,8 +64,11 @@ const useEditEvent = (id: number) => {
       router.push("/dashboard/event-list");
     },
     onError: (error: AxiosError<any>) => {
-      console.error("Update error:", error.response?.data);
-      toast.error(error.response?.data.message || "Failed to update event");
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data ||
+        "Failed to update event";
+      toast.error(errorMessage);
     },
   });
 };

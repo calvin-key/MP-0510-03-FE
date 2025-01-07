@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { Transaction, TransactionItem } from "@/types/transaction";
+import Footer from "@/components/Footer";
 
 interface TransactionSummaryProps {
   transactionId: number;

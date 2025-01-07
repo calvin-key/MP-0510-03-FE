@@ -58,7 +58,7 @@ const StatisticPage = () => {
   });
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <div className="container mx-auto max-h-[80vh] overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
       <h1 className="mb-5 text-2xl font-bold sm:text-3xl">
         Event Statistics Dashboard
       </h1>
